@@ -17,4 +17,4 @@ COPY . .
 RUN npm run build
 
 # Set the command to run the transpiled JavaScript file
-CMD [ "node", "dist/index.js" ]
+CMD [ "node", "dist/worker.js" ]
