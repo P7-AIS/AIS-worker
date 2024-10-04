@@ -1,0 +1,11 @@
+services:
+  app:
+    container_name: AIS-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ais-worker:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production

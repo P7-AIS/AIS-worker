@@ -1,0 +1,24 @@
+{
+  "name": "ais-worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node index.ts",
+    "build": "tsc",
+    "docker:build": "docker compose build",
+    "docker:run": "docker compose up -d",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bullmq": "^5.13.2",
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}
