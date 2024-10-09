@@ -1,0 +1,3 @@
+[submodule "AIS-models"]
+	path = AIS-models
+	url = https://github.com/P7-AIS/AIS-models.git
