@@ -1,5 +1,7 @@
 // worker.ts
 
+import VesselScore from './implementations/VesselScore'
+
 import { Worker, Queue, Job } from 'bullmq';
 import { Redis } from 'ioredis';
 import dotenv from 'dotenv';
