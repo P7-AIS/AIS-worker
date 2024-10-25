@@ -4,8 +4,8 @@
   "description": "",
   "main": "worker.js",
   "scripts": {
-    "start": "node-22 dist/worker.js",
-    "dev": "ts-node src/worker.ts",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
     "build": "tsc",
     "docker:build": "docker compose build",
     "docker:run": "docker compose up -d",
