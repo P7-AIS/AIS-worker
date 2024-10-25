@@ -7,7 +7,7 @@ import { AISJobData, AisMessage } from "../../AIS-models/models";
 // }
 
 export function ais_job_to_message(data: AISJobData): Messages {
-    let trajectory = Geometry.parse(data.trajectories) as unknown as LineString
+    let trajectory = Geometry.parse(data.trajectory.binPath) as unknown as LineString
 
     return new Messages(data.mmsi, data.aisMessages, trajectory)
 }

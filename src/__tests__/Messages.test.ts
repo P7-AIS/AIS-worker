@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { Messages, ais_job_to_message } from "../implementations/Messages";
-import { AISJobData, AisMessage } from "../../AIS-models/models";
+import { AISJobData, AisMessage, AISWorkerAlgorithm } from "../../AIS-models/models";
 import { Geometry, LineString, Point } from 'wkx';
 
 const fromHexString = (hexString: any) =>
@@ -25,29 +25,24 @@ function aisjobdata(path: string): AISJobData {
             id: 0,
             mmsi: 0,
             timestamp: new Date(),
-            latitude: 0,
-            longitude: 0,
         },
         {
             id: 1,
             mmsi: 1,
             timestamp: new Date(),
-            latitude: 1,
-            longitude: 1,
         },
         {
             id: 2,
             mmsi: 2,
             timestamp: new Date(),
-            latitude: 2,
-            longitude: 2,
         },
     ];
 
     const jobdata: AISJobData = {
         mmsi: 0,
         aisMessages: messages,
-        trajectories: trajectory_buffer
+        trajectory: {mmsi: 0, binPath: trajectory_buffer},
+        algorithm: AISWorkerAlgorithm.SIMPLE
     };
 
     return jobdata
