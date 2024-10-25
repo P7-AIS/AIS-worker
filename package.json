@@ -2,14 +2,14 @@
   "name": "ais-worker",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "worker.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "ts-node index.ts",
+    "start": "node-22 dist/worker.js",
+    "dev": "ts-node src/worker.ts",
     "build": "tsc",
     "docker:build": "docker compose build",
     "docker:run": "docker compose up -d",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +18,14 @@
     "bullmq": "^5.13.2",
     "dotenv": "^16.4.5",
     "ioredis": "^5.4.1",
+    "mathjs": "^13.2.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "wkx": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.13",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5"
   }
 }

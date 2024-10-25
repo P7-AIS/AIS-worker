@@ -1,5 +1,7 @@
 // worker.ts
 
+import { Messages } from './implementations/Messages';
+
 import VesselScore from './implementations/VesselScore'
 
 import { Worker, Queue, Job } from 'bullmq';
