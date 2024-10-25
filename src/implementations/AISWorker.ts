@@ -12,7 +12,7 @@ export default class AISWorker implements IWorker {
     private readonly randomScorer: IScorer,
     private readonly simpleScorer: IScorer
   ) {
-    this.worker = new Worker(this.jobQueue.name, this.computeJob, {
+    this.worker = new Worker(this.jobQueue.name, this.computeJob.bind(this), {
       connection: this.connection,
       autorun: false,
     })
@@ -27,6 +27,18 @@ export default class AISWorker implements IWorker {
 
     this.worker.on('failed', (job: Job | undefined, err: Error, prev: string) => {
       console.error(`Job ${job?.id} has failed with error: ${err.message}`)
+    })
+
+    this.worker.on('error', (err: Error) => {
+      console.error(`Worker has failed with error: ${err.message}`)
+    })
+
+    this.worker.on('stalled', (jobId: string, prev: string) => {
+      console.error(`Job ${jobId} has stalled`)
+    })
+
+    this.worker.on('drained', () => {
+      console.log(`Worker has drained`)
     })
   }
 
