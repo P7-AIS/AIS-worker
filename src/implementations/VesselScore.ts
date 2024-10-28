@@ -8,6 +8,7 @@ import { Messages } from "./Messages";
 import { isFunctionTypeNode } from "typescript";
 import { DELAY_TIME_1 } from "bullmq";
 import regression from "regression";
+import { SQRT1_2 } from "mathjs";
 
 export default class VesselScore
   implements IVesselScore, IVesselAnalysis, TrustScore
@@ -81,4 +82,31 @@ export function solveQuadraticCoeeficients(
   const result = regression.polynomial(points, { order: 2, precision: 10 });
 
   return result.equation;
+}
+
+function vessel_position(coefficients: number[], timestamp: number): number {
+  return (
+    coefficients[0] * Math.pow(timestamp, 2) +
+    coefficients[1] * timestamp +
+    coefficients[2]
+  );
+}
+
+export function calculate_distance(
+  point_test: Point,
+  point_real: Point,
+): number {
+  const R = 6371; // Radius of earth in km.
+  return (
+    2 *
+    R *
+    Math.asin(
+      Math.sqrt(
+        Math.pow(Math.sin((point_test.y - point_real.y) / 2), 2) +
+          Math.cos(point_test.y) *
+            Math.cos(point_real.y) *
+            Math.pow(Math.sin((point_test.x - point_real.x) / 2), 2),
+      ),
+    )
+  );
 }

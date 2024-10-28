@@ -1,5 +1,5 @@
 import VesselScore, {
-  curveFit3D,
+  calculate_distance,
   normalize_points,
   solveQuadraticCoeeficients,
 } from "../implementations/VesselScore";
@@ -151,7 +151,20 @@ test("Curve fit 3D points", () => {
   let res_x = solveQuadraticCoeeficients(points_x);
   let res_y = solveQuadraticCoeeficients(points_y);
 
-  console.log("somthenig");
-  console.log(res_x);
-  console.log(res_y);
+  // Find test cases
+});
+
+test("Test distance", () => {
+  let point2: Point = new Point(
+    10.520233,
+    55.88015,
+    undefined,
+    1725863040,
+    4326,
+  );
+  let point3: Point = new Point(10.51415, 55.8823, undefined, 1725863116, 4326);
+
+  let res = calculate_distance(point2, point3);
+
+  console.log(res);
 });
