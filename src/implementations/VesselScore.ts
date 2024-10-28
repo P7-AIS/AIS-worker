@@ -79,18 +79,6 @@ export function normalize_points(heading: number, points: Point[]): Point[] {
 export function solveQuadraticCoeeficients(
   points: [number, number][],
 ): number[] {
-  // create a mathjs instance with configuration
-  const config = {
-    relTol: 1e-12,
-    absTol: 1e-15,
-    matrix: "Matrix",
-    number: "number",
-    precision: 64,
-    predictable: false,
-    randomSeed: null,
-  };
-  const math = create(all);
-
   const result = regression.polynomial(points, { order: 2, precision: 10 });
 
   return result.equation;
