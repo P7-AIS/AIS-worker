@@ -31,7 +31,9 @@ export default class VesselScore
     throw new Error("Method not implemented.");
   }
   position_analysis(data: Messages): number {
-    throw new Error("Method not implemented.");
+    let sogs = predict_distances(data);
+    return sog_error(sogs);
+    // throw new Error("Method not implemented.");
   }
 
   average_weighted_score!: number;
@@ -55,8 +57,8 @@ export function normalize_points(heading: number, points: Point[]): Point[] {
         p.y - first_point.y,
         undefined,
         p.m - first_point.m,
-        p.srid,
-      ),
+        p.srid
+      )
   );
 
   // Now rotate the points such that they are centered by the heading of the ship.
@@ -67,8 +69,8 @@ export function normalize_points(heading: number, points: Point[]): Point[] {
         p.x * Math.sin(head_rad) + p.y * Math.cos(head_rad),
         undefined,
         p.m,
-        p.srid,
-      ),
+        p.srid
+      )
   );
 
   return points;
@@ -77,7 +79,7 @@ export function normalize_points(heading: number, points: Point[]): Point[] {
 // This should use a simpler type for solving. Instead of Point, then simply an array of tuples.
 // It should allow time to be used as x.
 export function solveQuadraticCoeeficients(
-  points: [number, number][],
+  points: [number, number][]
 ): number[] {
   const result = regression.polynomial(points, { order: 2, precision: 10 });
 
@@ -92,10 +94,7 @@ function vessel_position(coefficients: number[], timestamp: number): number {
   );
 }
 
-export function calculate_distance(
-  point_test: Point,
-  point_real: Point,
-): number {
+export function haversine_dist(point_test: Point, point_real: Point): number {
   const R = 6371; // Radius of earth in km.
   return (
     2 *
@@ -105,8 +104,39 @@ export function calculate_distance(
         Math.pow(Math.sin((point_test.y - point_real.y) / 2), 2) +
           Math.cos(point_test.y) *
             Math.cos(point_real.y) *
-            Math.pow(Math.sin((point_test.x - point_real.x) / 2), 2),
-      ),
-    )
+            Math.pow(Math.sin((point_test.x - point_real.x) / 2), 2)
+      )
+    ) *
+    1000
   );
+}
+//? why is this not a standard library function?
+function zip<a, b>(left: a[], right: b[]): [a, b][] {
+  // const zip: Point[][] = (a: any[], b: any[]) => a.map((k, i) => [k, b[i]]);
+  return left.map((k, i) => [k, right[i]]);
+}
+
+function sog_error(sogs: [number, number][]): number {
+  let sse = sogs.map(x=> Math.pow(x[0]-x[1],2)).reduce((acc,val) => acc+val,0); 
+  return 0;
+}
+
+export function predict_distances(mes: Messages): [number, number][] {
+  let points = structuredClone(mes.vessel_trajector.points);
+  points.shift();
+
+  let computed_sog = zip(mes.vessel_trajector.points, points)
+    .map((pair) => {
+      return {
+        dist: haversine_dist(pair[0], pair[1]),
+        delta_time: pair[1].m - pair[0].m,
+      };
+    })
+    .map((x) => x.dist / x.delta_time);
+
+  let sogs = mes.ais_messages.map((x) => x.sog);
+  let soggy: [number,number][] = zip(computed_sog, sogs)
+    .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
+    .map(x => [x[0], (x[1] * 1.852) / 3.6]) // knots to m/s;
+  return soggy;
 }
