@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import AISWorker from './implementations/AISWorker'
 import RandomScorer from './implementations/RandomScorer'
 import SimpleScorer from './implementations/SimpleScorer'
+import HashScorer from './implementations/HashScorer'
 
 dotenv.config()
 
@@ -17,7 +18,8 @@ const queue = new Queue(REDIS_QUEUE_NAME, { connection })
 
 const randomScorer = new RandomScorer()
 const simpleScorer = new SimpleScorer()
+const hashScorer = new HashScorer()
 
-const aisWorker = new AISWorker(queue, connection, randomScorer, simpleScorer)
+const aisWorker = new AISWorker(queue, connection, randomScorer, simpleScorer, hashScorer)
 
 aisWorker.start()

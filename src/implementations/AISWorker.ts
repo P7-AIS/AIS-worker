@@ -10,7 +10,8 @@ export default class AISWorker implements IWorker {
     private readonly jobQueue: Queue<AISJobData, AISJobResult>,
     private readonly connection: { host: string; port: number },
     private readonly randomScorer: IScorer,
-    private readonly simpleScorer: IScorer
+    private readonly simpleScorer: IScorer,
+    private readonly hashScorer: IScorer
   ) {
     this.worker = new Worker(this.jobQueue.name, this.computeJob.bind(this), {
       connection: this.connection,
@@ -58,6 +59,8 @@ export default class AISWorker implements IWorker {
         return this.randomScorer.score(job.data)
       case AISWorkerAlgorithm.SIMPLE:
         return this.simpleScorer.score(job.data)
+      case AISWorkerAlgorithm.HASHED:
+        return this.hashScorer.score(job.data)
       default:
         throw new Error('Invalid algorithm')
     }
