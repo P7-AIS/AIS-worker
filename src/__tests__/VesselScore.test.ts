@@ -139,9 +139,22 @@ function test_points(): Point[] {
 }
 
 function test_mes(): Messages {
-  let points = test_points();
-  let ais_mess = 
+  // start time:    1725863029.3645544
+  // end time:      1725863341.3673398
+  // sog: ~11.5
 
+  let points = test_points();
+  // let ais_mess: AisMessage = {
+  //   id: 0,
+  //   mmsi: 219019887,
+  //   timestamp: new Date(points[0].m),
+  //   sog: 11.5,
+  // };
+  let ais_mess: AisMessage[] = structuredClone(points).map((x, i) => {
+    return { id: 0, mmsi: 219019887, timestamp: new Date(x.m), sog: 11.5 };
+  });
+
+  return new Messages(219019887,ais_mess,new LineString(points,4326));
 }
 
 test("Curve fit 3D points", () => {
@@ -259,5 +272,8 @@ test("Test distance", () => {
 });
 
 test("point analysis", () => {
-  let trajec;
+  let scorer = new VesselScore();
+  let res = scorer.position_analysis(test_mes());
+
+  console.log(res);
 });

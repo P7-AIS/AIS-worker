@@ -113,20 +113,32 @@ export function haversine_dist(point_test: Point, point_real: Point): number {
 //? why is this not a standard library function?
 function zip<a, b>(left: a[], right: b[]): [a, b][] {
   // const zip: Point[][] = (a: any[], b: any[]) => a.map((k, i) => [k, b[i]]);
-  return left.map((k, i) => [k, right[i]]);
+  if (right.length > left.length) {
+    return left.map((k, i) => [k, right[i]]);
+  } else {
+    let zipped: [b,a][] = right.map((k, i) => [k, left[i]])
+    // .map((x) => [x[1], x[0]]);
+    let swapped: [a,b][] = zipped.map(x=> [x[1],x[0]])
+    return swapped 
+  }
+  // return zipped
 }
 
 function sog_error(sogs: [number, number][]): number {
-  let sse = sogs.map(x=> Math.pow(x[0]-x[1],2)).reduce((acc,val) => acc+val,0); 
+  let sse = sogs
+    .map((x) => Math.pow(x[0] - x[1], 2))
+    .reduce((acc, val) => acc + val, 0);
   return 0;
 }
 
 export function predict_distances(mes: Messages): [number, number][] {
-  let points = structuredClone(mes.vessel_trajector.points);
+  let points: Point[] = structuredClone<Point[]>(
+    mes.vessel_trajector.points
+  ).map((x) => x as unknown as Point); //TODO: lidt verbose
   points.shift();
 
   let computed_sog = zip(mes.vessel_trajector.points, points)
-    .map((pair) => {
+    .map((pair, i) => {
       return {
         dist: haversine_dist(pair[0], pair[1]),
         delta_time: pair[1].m - pair[0].m,
@@ -135,8 +147,8 @@ export function predict_distances(mes: Messages): [number, number][] {
     .map((x) => x.dist / x.delta_time);
 
   let sogs = mes.ais_messages.map((x) => x.sog);
-  let soggy: [number,number][] = zip(computed_sog, sogs)
+  let soggy: [number, number][] = zip(computed_sog, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
-    .map(x => [x[0], (x[1] * 1.852) / 3.6]) // knots to m/s;
+    .map((x) => [x[0], (x[1] * 1.852) / 3.6]); // knots to m/s;
   return soggy;
 }
