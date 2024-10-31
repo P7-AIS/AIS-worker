@@ -146,6 +146,8 @@ test('point analysis', () => {
   let res = scorer.position_analysis(test_mes())
 
   expect(res).toBeGreaterThan(0)
+  expect(res).not.toEqual(Infinity)
+  expect(res).not.toEqual(Infinity - 1)
   expect(res).not.toBeNaN
   expect(res).toBeDefined
 })
