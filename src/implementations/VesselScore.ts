@@ -25,7 +25,7 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
     throw new Error('Method not implemented.')
   }
   position_analysis(data: Messages): number {
-    let sogs = predict_distances(data)
+    let sogs = sog_pairings(data)
     return sog_error(sogs)
   }
 
@@ -106,11 +106,12 @@ function sog_error(sogs: [number, number][]): number {
   return sse
 }
 
-export function predict_distances(mes: Messages): [number, number][] {
-  let points = structuredClone(mes.vessel_trajector.points).map((x) => x as unknown as Point) //? bruh moment
+// pairs computed SOG's with reported SOG's
+export function sog_pairings(mes: Messages): [number, number][] {
+  let points = structuredClone(mes.vessel_trajectory.points)
   points.shift()
 
-  let computed_sogs = zip(mes.vessel_trajector.points, points) // create a list of pairs [point__n,point__n+1]
+  let computed_sogs = zip(mes.vessel_trajectory.points, points) // create a list of pairs [point__n,point__n+1]
     .map((pair) => {
       return {
         dist: haversine_dist([pair[0].x, pair[0].y], [pair[1].x, pair[1].y]),
