@@ -281,5 +281,5 @@ test("point analysis", () => {
   let scorer = new VesselScore();
   let res = scorer.position_analysis(test_mes());
 
-  expect(res).toBeCloseTo(65.35, 2);
+  expect(res).toBeCloseTo(65354.2, 2);
 });

@@ -114,7 +114,7 @@ export function calculate_distance(
     point_real.srid,
   );
 
-  const R = 6371; // Radius of earth in km.
+  const R = 6371000; // Radius of earth in m.
   return (
     2 *
     R *
