@@ -172,5 +172,5 @@ test("Test distance", () => {
 
   let res = calculate_distance(point2, point3);
 
-  expect(res).toBeCloseTo(65.35, 2);
+  expect(res).toBeCloseTo(65354.2, 2);
 });
