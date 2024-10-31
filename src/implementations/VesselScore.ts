@@ -4,7 +4,7 @@ import { Messages } from './Messages'
 import { isFunctionTypeNode } from 'typescript'
 import { DELAY_TIME_1 } from 'bullmq'
 import regression from 'regression'
-import { SQRT1_2 } from 'mathjs'
+import { forEach, SQRT1_2 } from 'mathjs'
 import { Trajectory } from '../../AIS-models/models'
 
 export default class VesselScore implements IVesselScore, IVesselAnalysis, TrustScore {
@@ -13,8 +13,22 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
   }
 
   // The idea is to utilize curve fitting
-  trajectory_analysis(data: Messages): number {
-    throw new Error('Method not implemented.')
+  trajectory_analysis(
+    data: Messages,
+    old_score_numerator: number = 1,
+    old_score_denominator: number = 1
+  ): [number, number] {
+    let points = data.vessel_trajectory.points
+
+    let points_len = points.length - 2
+
+    let scores: number[] = []
+
+    for (let i = 2; i < points_len; i++) {
+      scores.push(trajectory_single_score([points[i - 2], points[i - 1], points[i + 1], points[i + 2], points[i]]))
+    }
+
+    return score_calculator(scores, old_score_numerator, old_score_denominator)
   }
   cog_analysis(data: Messages): number {
     throw new Error('Method not implemented.')
@@ -36,6 +50,23 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
   head_score!: number
   speed_score!: number
   position_score!: number
+}
+
+function score_calculator(
+  scores: number[],
+  old_score_numerator: number,
+  old_score_denominator: number
+): [number, number] {
+  const decay_factor = 0.99
+
+  let numerator = scores.map((s, i) => s * Math.pow(decay_factor, i + 1)).reduce((acc, val) => acc + val)
+
+  let denominator = scores.map((_, i) => Math.pow(decay_factor, i + 1)).reduce((acc, val) => acc + val)
+
+  numerator = numerator + old_score_numerator * Math.pow(decay_factor, scores.length)
+  denominator = denominator + old_score_denominator * Math.pow(decay_factor, scores.length)
+
+  return [numerator, denominator]
 }
 
 export function normalize_points(heading: number, points: Point[]): Point[] {
