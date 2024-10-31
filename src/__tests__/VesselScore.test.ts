@@ -156,15 +156,21 @@ test("Curve fit 3D points", () => {
 
 test("Test distance", () => {
   let point2: Point = new Point(
-    10.520233,
-    55.88015,
+    8.489810899999998,
+    56.514157499999996,
     undefined,
     1725863040,
     4326,
   );
-  let point3: Point = new Point(10.51415, 55.8823, undefined, 1725863116, 4326);
+  let point3: Point = new Point(
+    9.2409831,
+    56.0996635,
+    undefined,
+    1725863116,
+    4326,
+  );
 
   let res = calculate_distance(point2, point3);
 
-  console.log(res);
+  expect(res).toBeCloseTo(65.35, 2);
 });

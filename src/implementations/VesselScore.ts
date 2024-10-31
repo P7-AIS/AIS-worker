@@ -96,16 +96,32 @@ export function calculate_distance(
   point_test: Point,
   point_real: Point,
 ): number {
+  let point_1 = new Point(
+    (point_test.x * Math.PI) / 180,
+    (point_test.y * Math.PI) / 180,
+    point_test.z,
+    point_test.m,
+    point_test.srid,
+  );
+
+  let point_2 = new Point(
+    (point_real.x * Math.PI) / 180,
+    (point_real.y * Math.PI) / 180,
+    point_real.z,
+    point_real.m,
+    point_real.srid,
+  );
+
   const R = 6371; // Radius of earth in km.
   return (
     2 *
     R *
     Math.asin(
       Math.sqrt(
-        Math.pow(Math.sin((point_test.y - point_real.y) / 2), 2) +
-          Math.cos(point_test.y) *
-            Math.cos(point_real.y) *
-            Math.pow(Math.sin((point_test.x - point_real.x) / 2), 2),
+        Math.pow(Math.sin((point_1.y - point_2.y) / 2), 2) +
+          Math.cos(point_1.y) *
+            Math.cos(point_2.y) *
+            Math.pow(Math.sin((point_1.x - point_2.x) / 2), 2),
       ),
     )
   );
