@@ -73,22 +73,9 @@ function vessel_position(coefficients: number[], timestamp: number): number {
   return coefficients[0] * Math.pow(timestamp, 2) + coefficients[1] * timestamp + coefficients[2]
 }
 
-export function calculate_distance(point_test: Point, point_real: Point): number {
-  let point_1 = new Point(
-    (point_test.x * Math.PI) / 180,
-    (point_test.y * Math.PI) / 180,
-    point_test.z,
-    point_test.m,
-    point_test.srid
-  )
-
-  let point_2 = new Point(
-    (point_real.x * Math.PI) / 180,
-    (point_real.y * Math.PI) / 180,
-    point_real.z,
-    point_real.m,
-    point_real.srid
-  )
+export function calculate_distance(point_test: [number, number], point_real: [number, number]): number {
+  let point_1: [number, number] = [(point_test[0] * Math.PI) / 180, (point_test[1] * Math.PI) / 180]
+  let point_2: [number, number] = [(point_real[0] * Math.PI) / 180, (point_real[1] * Math.PI) / 180]
 
   const R = 6371000 // Radius of earth in m.
   return (
@@ -96,8 +83,8 @@ export function calculate_distance(point_test: Point, point_real: Point): number
     R *
     Math.asin(
       Math.sqrt(
-        Math.pow(Math.sin((point_1.y - point_2.y) / 2), 2) +
-          Math.cos(point_1.y) * Math.cos(point_2.y) * Math.pow(Math.sin((point_1.x - point_2.x) / 2), 2)
+        Math.pow(Math.sin((point_1[1] - point_2[1]) / 2), 2) +
+          Math.cos(point_1[1]) * Math.cos(point_2[1]) * Math.pow(Math.sin((point_1[0] - point_2[0]) / 2), 2)
       )
     )
   )
