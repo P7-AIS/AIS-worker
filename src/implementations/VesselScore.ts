@@ -1,10 +1,11 @@
-import { Point } from 'wkx'
+import { LineString, Point } from 'wkx'
 import { IVesselScore, IVesselAnalysis, TrustScore } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
 import { isFunctionTypeNode } from 'typescript'
 import { DELAY_TIME_1 } from 'bullmq'
 import regression from 'regression'
 import { SQRT1_2 } from 'mathjs'
+import { Trajectory } from '../../AIS-models/models'
 
 export default class VesselScore implements IVesselScore, IVesselAnalysis, TrustScore {
   calculateVesselScore(anal: IVesselAnalysis): TrustScore {
@@ -90,6 +91,7 @@ export function haversine_dist(point_test: [number, number], point_real: [number
     )
   )
 }
+
 //? why is this not a standard library function?
 function zip<a, b>(left: a[], right: b[]): [a, b][] {
   if (right.length > left.length) {
@@ -128,4 +130,9 @@ export function sog_pairings(mes: Messages): [number, number][] {
     .filter((x) => !x.includes(NaN))
     .filter((x) => !x.includes(Infinity)) as [number, number][]
   return soggy
+}
+
+// The input should be the amount of linestrings to analyse.
+export function trajectory_single_score(trajectories: LineString) {
+  let points: Point[] = trajectories.points
 }
