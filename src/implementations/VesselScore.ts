@@ -1,10 +1,11 @@
-import { Point } from 'wkx'
+import { LineString, Point } from 'wkx'
 import { IVesselScore, IVesselAnalysis, TrustScore } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
 import { isFunctionTypeNode } from 'typescript'
 import { DELAY_TIME_1 } from 'bullmq'
 import regression from 'regression'
 import { SQRT1_2 } from 'mathjs'
+import { Trajectory } from '../../AIS-models/models'
 
 export default class VesselScore implements IVesselScore, IVesselAnalysis, TrustScore {
   calculateVesselScore(anal: IVesselAnalysis): TrustScore {
@@ -88,4 +89,9 @@ export function calculate_distance(point_test: [number, number], point_real: [nu
       )
     )
   )
+}
+
+// The input should be the amount of linestrings to analyse.
+export function trajectory_single_score(trajectories: LineString) {
+  let points: Point[] = trajectories.points
 }
