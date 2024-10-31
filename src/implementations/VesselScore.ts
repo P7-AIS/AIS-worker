@@ -27,7 +27,6 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
   position_analysis(data: Messages): number {
     let sogs = predict_distances(data)
     return sog_error(sogs)
-    // throw new Error("Method not implemented.");
   }
 
   average_weighted_score!: number
@@ -93,16 +92,13 @@ export function haversine_dist(point_test: [number, number], point_real: [number
 }
 //? why is this not a standard library function?
 function zip<a, b>(left: a[], right: b[]): [a, b][] {
-  // const zip: Point[][] = (a: any[], b: any[]) => a.map((k, i) => [k, b[i]]);
   if (right.length > left.length) {
     return left.map((k, i) => [k, right[i]])
   } else {
     let zipped: [b, a][] = right.map((k, i) => [k, left[i]])
-    // .map((x) => [x[1], x[0]]);
     let swapped: [a, b][] = zipped.map((x) => [x[1], x[0]])
     return swapped
   }
-  // return zipped
 }
 
 function sog_error(sogs: [number, number][]): number {
@@ -111,11 +107,11 @@ function sog_error(sogs: [number, number][]): number {
 }
 
 export function predict_distances(mes: Messages): [number, number][] {
-  let points = structuredClone(mes.vessel_trajector.points).map((x) => x as unknown as Point) //TODO: lidt verbose
+  let points = structuredClone(mes.vessel_trajector.points).map((x) => x as unknown as Point) //? bruh moment
   points.shift()
 
-  let computed_sog = zip(mes.vessel_trajector.points, points)
-    .map((pair, i) => {
+  let computed_sogs = zip(mes.vessel_trajector.points, points) // create a list of pairs [point__n,point__n+1]
+    .map((pair) => {
       return {
         dist: haversine_dist([pair[0].x, pair[0].y], [pair[1].x, pair[1].y]),
         delta_time: pair[1].m - pair[0].m,
@@ -123,10 +119,11 @@ export function predict_distances(mes: Messages): [number, number][] {
     })
     .map((x) => x.dist / x.delta_time)
 
+  const KNOT_TO_MS = 1.852 / 3.6 //0.5144444444
   let sogs = mes.ais_messages.map((x) => x.sog)
-  let soggy: [number, number][] = zip(computed_sog, sogs)
+  let soggy: [number, number][] = zip(computed_sogs, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
-    .map((x) => [x[0], (x[1] * 1.852) / 3.6]) // knots to m/s;
+    .map((x) => [x[0], x[1] * KNOT_TO_MS])
     .filter((x) => !x.includes(NaN))
     .filter((x) => !x.includes(Infinity)) as [number, number][]
   return soggy
