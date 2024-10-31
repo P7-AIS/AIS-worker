@@ -151,6 +151,8 @@ test("Curve fit 3D points", () => {
   let res_x = solveQuadraticCoeeficients(points_x);
   let res_y = solveQuadraticCoeeficients(points_y);
 
+  console.log("x: " + res_x + "\ny: " + res_y);
+
   // Find test cases
 });
 
