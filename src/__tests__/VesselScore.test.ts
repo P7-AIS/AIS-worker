@@ -191,6 +191,6 @@ test(`test angle between two ellipsoidal points`, () => {
 
   expect(res).not.toBeNaN
   expect(res).not.toBe(Infinity || Infinity - 1)
-  expect(res).toBeGreaterThan(200)
+  expect(res).toBeGreaterThan(200) // west-ish
   expect(res).toBeLessThan(300)
 })

@@ -5,7 +5,7 @@ import { isFunctionTypeNode } from 'typescript'
 import { DELAY_TIME_1 } from 'bullmq'
 import regression from 'regression'
 import { SQRT1_2 } from 'mathjs'
-import { Trajectory } from '../../AIS-models/models'
+import { AisMessage, Trajectory } from '../../AIS-models/models'
 
 export default class VesselScore implements IVesselScore, IVesselAnalysis, TrustScore {
   calculateVesselScore(anal: IVesselAnalysis): TrustScore {
@@ -107,6 +107,24 @@ export function bearing(lon1: number, lat1: number, lon2: number, lat2: number):
   return ((theta * 180) / Math.PI + 360) % 360
 }
 
+export function heading_scorer({ points }: LineString, messages: AisMessage[]): Number {
+  let shifted = structuredClone(points)
+  shifted.shift()
+
+  let computed_bearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
+
+  const TOLERANCE = 15
+  let nice_cog = zip(computed_bearings, messages)
+    .map((x) => [x[0], x[1].cog])
+    .filter((x): x is [number, number] => x[1] !== undefined || x !== null)
+    .map((x) => Math.abs(x[0] - x[1]))
+    .filter((p) => p - TOLERANCE > 0)
+    .filter((x) => x / 360)
+
+  //TODO error function for errorneous cog's
+  return 0
+}
+
 //? why is this not a standard library function?
 function zip<a, b>(left: a[], right: b[]): [a, b][] {
   if (right.length > left.length) {
@@ -141,7 +159,7 @@ export function sog_pairings(mes: Messages): [number, number][] {
   let sogs = mes.ais_messages.map((x) => x.sog)
   let soggy: [number, number][] = zip(computed_sogs, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
-    .map((x) => [x[0], x[1] * KNOT_TO_MS])
+    .map((x: [number, number]) => [x[0], x[1] * KNOT_TO_MS])
     .filter((x) => !x.includes(NaN))
     .filter((x) => !x.includes(Infinity)) as [number, number][]
   return soggy
