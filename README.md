@@ -1,9 +1,16 @@
+# AIS-worker
+
 # Prerequisites
-- `git submodule update --init --recursive`
+
 - `npm i`
-- Configure environment variables `REDIS_HOST` and `REDIS_PORT`
+- Copy `.env.example` to `.env` and fill out appropiate values
+- `git submodule update --init --recursive`
 
 # Running Tests
 
 `npm test`
 
+## Development
+
+- `npm i`
+- `npm run dev`
