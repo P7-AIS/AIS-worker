@@ -8,7 +8,6 @@ import { AISJobData, AisMessage } from '../../AIS-models/models'
 import { LineString, Point } from 'wkx'
 import { Messages } from '../implementations/Messages'
 
-
 //test("Normalize points", () => {
 //  let point1 = new Point(1, 2, undefined, 1, 4326);
 //  let point2 = new Point(1.5, 2.4, undefined, 1, 4326);
@@ -175,9 +174,11 @@ test('Test single score for Linestring', () => {
   let point10: Point = new Point(10.4955, 55.8879, undefined, 1725863340, 4326)
   let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
 
-  let points: Point[] = [point1, point2, point3, point4, point5, point6, point7, point8, point9, point10, point11]
+  let points: Point[] = [point3, point4, point6, point7, point5]
 
-  let linestring: LineString = new LineString(points, 4326)
+  let res = trajectory_single_score(points)
 
-  trajectory_single_score(linestring)
+  console.log(res)
+
+  expect(res).toBe(1)
 })

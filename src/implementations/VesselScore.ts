@@ -133,6 +133,25 @@ export function sog_pairings(mes: Messages): [number, number][] {
 }
 
 // The input should be the amount of linestrings to analyse.
-export function trajectory_single_score(trajectories: LineString) {
-  let points: Point[] = trajectories.points
+export function trajectory_single_score(points: Point[]): number {
+  let diff: number = points[0].m
+
+  let simple_points_x: [number, number][] = points.slice(0, -1).map((p: Point) => [p.m - diff, p.x])
+  let simple_points_y: [number, number][] = points.slice(0, -1).map((p: Point) => [p.m - diff, p.y])
+
+  let control_point: Point = points.slice(-1)[0]
+
+  let coeef_x = solveQuadraticCoeeficients(simple_points_x)
+  let coeef_y = solveQuadraticCoeeficients(simple_points_y)
+
+  let x_pos = vessel_position(coeef_x, control_point.m - diff)
+  let y_pos = vessel_position(coeef_y, control_point.m - diff)
+
+  let distance = haversine_dist([control_point.x, control_point.y], [x_pos, y_pos])
+
+  distance = distance - 10
+
+  distance = distance < 0 ? 0 : distance
+
+  return 1 / (1 + Math.pow(distance, 2))
 }
