@@ -94,16 +94,13 @@ function vessel_position(coefficients: number[], timestamp: number): number {
   );
 }
 
-export function calculate_distance(
-  point_test: Point,
-  point_real: Point,
-): number {
+export function haversine_dist(point_test: Point, point_real: Point): number {
   let point_1 = new Point(
     (point_test.x * Math.PI) / 180,
     (point_test.y * Math.PI) / 180,
     point_test.z,
     point_test.m,
-    point_test.srid,
+    point_test.srid
   );
 
   let point_2 = new Point(
@@ -111,7 +108,7 @@ export function calculate_distance(
     (point_real.y * Math.PI) / 180,
     point_real.z,
     point_real.m,
-    point_real.srid,
+    point_real.srid
   );
 
   const R = 6371000; // Radius of earth in m.
@@ -123,8 +120,8 @@ export function calculate_distance(
         Math.pow(Math.sin((point_1.y - point_2.y) / 2), 2) +
           Math.cos(point_1.y) *
             Math.cos(point_2.y) *
-            Math.pow(Math.sin((point_1.x - point_2.x) / 2), 2),
-      ),
+            Math.pow(Math.sin((point_1.x - point_2.x) / 2), 2)
+      )
     )
   );
 }
@@ -134,10 +131,10 @@ function zip<a, b>(left: a[], right: b[]): [a, b][] {
   if (right.length > left.length) {
     return left.map((k, i) => [k, right[i]]);
   } else {
-    let zipped: [b,a][] = right.map((k, i) => [k, left[i]])
+    let zipped: [b, a][] = right.map((k, i) => [k, left[i]]);
     // .map((x) => [x[1], x[0]]);
-    let swapped: [a,b][] = zipped.map(x=> [x[1],x[0]])
-    return swapped 
+    let swapped: [a, b][] = zipped.map((x) => [x[1], x[0]]);
+    return swapped;
   }
   // return zipped
 }
@@ -146,13 +143,13 @@ function sog_error(sogs: [number, number][]): number {
   let sse = sogs
     .map((x) => Math.pow(x[0] - x[1], 2))
     .reduce((acc, val) => acc + val, 0);
-  return 0;
+  return sse;
 }
 
 export function predict_distances(mes: Messages): [number, number][] {
-  let points: Point[] = structuredClone<Point[]>(
-    mes.vessel_trajector.points
-  ).map((x) => x as unknown as Point); //TODO: lidt verbose
+  let points = structuredClone(mes.vessel_trajector.points).map(
+    (x) => x as unknown as Point
+  ); //TODO: lidt verbose
   points.shift();
 
   let computed_sog = zip(mes.vessel_trajector.points, points)
@@ -167,6 +164,8 @@ export function predict_distances(mes: Messages): [number, number][] {
   let sogs = mes.ais_messages.map((x) => x.sog);
   let soggy: [number, number][] = zip(computed_sog, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
-    .map((x) => [x[0], (x[1] * 1.852) / 3.6]); // knots to m/s;
+    .map((x) => [x[0], (x[1] * 1.852) / 3.6]) // knots to m/s;
+    .filter((x) => !x.includes(NaN))
+    .filter((x) => !x.includes(Infinity)) as [number, number][];
   return soggy;
 }
