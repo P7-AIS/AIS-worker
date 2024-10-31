@@ -57,14 +57,14 @@ function score_calculator(
   old_score_numerator: number,
   old_score_denominator: number
 ): [number, number] {
-  const decay_factor = 0.99
+  const DECAY_FACTOR = 0.99
 
-  let numerator = scores.map((s, i) => s * Math.pow(decay_factor, i + 1)).reduce((acc, val) => acc + val)
+  let numerator = scores.map((s, i) => s * Math.pow(DECAY_FACTOR, i + 1)).reduce((acc, val) => acc + val, 0)
 
-  let denominator = scores.map((_, i) => Math.pow(decay_factor, i + 1)).reduce((acc, val) => acc + val)
+  let denominator = scores.map((_, i) => Math.pow(DECAY_FACTOR, i + 1)).reduce((acc, val) => acc + val, 0)
 
-  numerator = numerator + old_score_numerator * Math.pow(decay_factor, scores.length)
-  denominator = denominator + old_score_denominator * Math.pow(decay_factor, scores.length)
+  numerator = numerator + old_score_numerator * Math.pow(DECAY_FACTOR, scores.length)
+  denominator = denominator + old_score_denominator * Math.pow(DECAY_FACTOR, scores.length)
 
   return [numerator, denominator]
 }
@@ -150,10 +150,10 @@ export function heading_scorer({ points }: LineString, messages: AisMessage[]): 
     .filter((x): x is [number, number] => x[1] !== undefined || x !== null)
     .map((x) => Math.abs(x[0] - x[1]))
     .filter((p) => p - TOLERANCE > 0)
-    .filter((x) => x / 360)
+    .map((x) => x / 360)
 
-  //TODO error function for errorneous cog's
-  return 0
+  let res = score_calculator(nice_cog, 1, 1)
+  return res[0] / res[1]
 }
 
 //? why is this not a standard library function?

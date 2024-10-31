@@ -1,6 +1,7 @@
 import VesselScore, {
   bearing,
   haversine_dist,
+  heading_scorer,
   normalize_points,
   solveQuadraticCoeeficients,
   trajectory_single_score,
@@ -87,7 +88,7 @@ function test_mes(): Messages {
   //   sog: 11.5,
   // };
   let ais_mess: AisMessage[] = structuredClone(points).map((x, i) => {
-    return { id: 0, mmsi: 219019887, timestamp: new Date(x.m), sog: 11.5 }
+    return { id: 0, mmsi: 219019887, timestamp: new Date(x.m), sog: 11.5, cog: 295 }
   })
 
   return new Messages(219019887, ais_mess, new LineString(points, 4326))
@@ -214,4 +215,11 @@ test(`test angle between two ellipsoidal points`, () => {
   expect(res).not.toBe(Infinity || Infinity - 1)
   expect(res).toBeGreaterThan(200) // west-ish
   expect(res).toBeLessThan(300)
+})
+
+test(`cog inspection`, () => {
+  let mes = test_mes()
+  // mes.vessel_trajectory.points[1].x = 30
+  let res = heading_scorer(mes.vessel_trajectory, mes.ais_messages)
+  console.log(res)
 })
