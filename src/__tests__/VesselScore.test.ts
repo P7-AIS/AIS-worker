@@ -1,4 +1,5 @@
 import VesselScore, {
+  bearing,
   haversine_dist,
   normalize_points,
   solveQuadraticCoeeficients,
@@ -7,7 +8,6 @@ import VesselScore, {
 import { AISJobData, AisMessage } from '../../AIS-models/models'
 import { LineString, Point } from 'wkx'
 import { Messages } from '../implementations/Messages'
-
 
 //test("Normalize points", () => {
 //  let point1 = new Point(1, 2, undefined, 1, 4326);
@@ -180,4 +180,17 @@ test('Test single score for Linestring', () => {
   let linestring: LineString = new LineString(points, 4326)
 
   trajectory_single_score(linestring)
+})
+
+test(`test angle between two ellipsoidal points`, () => {
+  let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
+  let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
+
+  let res = bearing(point1.x, point1.y, point11.x, point11.y)
+  // console.log(res)
+
+  expect(res).not.toBeNaN
+  expect(res).not.toBe(Infinity || Infinity - 1)
+  expect(res).toBeGreaterThan(200)
+  expect(res).toBeLessThan(300)
 })

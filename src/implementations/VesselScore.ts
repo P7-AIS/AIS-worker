@@ -92,6 +92,21 @@ export function haversine_dist(point_test: [number, number], point_real: [number
   )
 }
 
+export function bearing(lon1: number, lat1: number, lon2: number, lat2: number): number {
+  const r_lon1 = lon1 * (Math.PI / 180)
+  const r_lat1 = lat1 * (Math.PI / 180)
+  const r_lon2 = lon2 * (Math.PI / 180)
+  const r_lat2 = lat2 * (Math.PI / 180)
+  const delta_lon = r_lon2 - r_lon1
+
+  const y = Math.sin(delta_lon) * Math.cos(r_lat2)
+  const x = Math.cos(r_lat1) * Math.sin(r_lat2) - Math.sin(r_lat1) * Math.cos(r_lat2) * Math.cos(delta_lon)
+
+  const theta = Math.atan2(y, x)
+
+  return ((theta * 180) / Math.PI + 360) % 360
+}
+
 //? why is this not a standard library function?
 function zip<a, b>(left: a[], right: b[]): [a, b][] {
   if (right.length > left.length) {
