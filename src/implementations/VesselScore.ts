@@ -26,7 +26,8 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
     throw new Error('Method not implemented.')
   }
   position_analysis(data: Messages): number {
-    throw new Error('Method not implemented.')
+    let sogs = sog_pairings(data)
+    return sog_error(sogs)
   }
 
   average_weighted_score!: number
@@ -74,7 +75,7 @@ function vessel_position(coefficients: number[], timestamp: number): number {
   return coefficients[0] * Math.pow(timestamp, 2) + coefficients[1] * timestamp + coefficients[2]
 }
 
-export function calculate_distance(point_test: [number, number], point_real: [number, number]): number {
+export function haversine_dist(point_test: [number, number], point_real: [number, number]): number {
   let point_1: [number, number] = [(point_test[0] * Math.PI) / 180, (point_test[1] * Math.PI) / 180]
   let point_2: [number, number] = [(point_real[0] * Math.PI) / 180, (point_real[1] * Math.PI) / 180]
 
@@ -89,6 +90,46 @@ export function calculate_distance(point_test: [number, number], point_real: [nu
       )
     )
   )
+}
+
+//? why is this not a standard library function?
+function zip<a, b>(left: a[], right: b[]): [a, b][] {
+  if (right.length > left.length) {
+    return left.map((k, i) => [k, right[i]])
+  } else {
+    let zipped: [b, a][] = right.map((k, i) => [k, left[i]])
+    let swapped: [a, b][] = zipped.map((x) => [x[1], x[0]])
+    return swapped
+  }
+}
+
+function sog_error(sogs: [number, number][]): number {
+  let sse = sogs.map((x) => Math.pow(x[0] - x[1], 2)).reduce((acc, val) => acc + val, 0)
+  return sse
+}
+
+// pairs computed SOG's with reported SOG's
+export function sog_pairings(mes: Messages): [number, number][] {
+  let points = structuredClone(mes.vessel_trajectory.points)
+  points.shift()
+
+  let computed_sogs = zip(mes.vessel_trajectory.points, points) // create a list of pairs [point__n,point__n+1]
+    .map((pair) => {
+      return {
+        dist: haversine_dist([pair[0].x, pair[0].y], [pair[1].x, pair[1].y]),
+        delta_time: pair[1].m - pair[0].m,
+      }
+    })
+    .map((x) => x.dist / x.delta_time)
+
+  const KNOT_TO_MS = 1.852 / 3.6 //0.5144444444
+  let sogs = mes.ais_messages.map((x) => x.sog)
+  let soggy: [number, number][] = zip(computed_sogs, sogs)
+    .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
+    .map((x) => [x[0], x[1] * KNOT_TO_MS])
+    .filter((x) => !x.includes(NaN))
+    .filter((x) => !x.includes(Infinity)) as [number, number][]
+  return soggy
 }
 
 // The input should be the amount of linestrings to analyse.
