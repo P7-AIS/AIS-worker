@@ -1,5 +1,7 @@
 import VesselScore, {
+  bearing,
   haversine_dist,
+  heading_scorer,
   normalize_points,
   solveQuadraticCoeeficients,
   trajectory_single_score,
@@ -86,7 +88,7 @@ function test_mes(): Messages {
   //   sog: 11.5,
   // };
   let ais_mess: AisMessage[] = structuredClone(points).map((x, i) => {
-    return { id: 0, mmsi: 219019887, timestamp: new Date(x.m), sog: 11.5 }
+    return { id: 0, mmsi: 219019887, timestamp: new Date(x.m), sog: 11.5, cog: 295 }
   })
 
   return new Messages(219019887, ais_mess, new LineString(points, 4326))
@@ -200,4 +202,24 @@ test('Test weighted score', () => {
   let data = new Messages(10, [], new LineString(points))
 
   let res = new VesselScore().trajectory_analysis(data)
+})
+
+test(`test angle between two ellipsoidal points`, () => {
+  let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
+  let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
+
+  let res = bearing(point1.x, point1.y, point11.x, point11.y)
+  // console.log(res)
+
+  expect(res).not.toBeNaN
+  expect(res).not.toBe(Infinity || Infinity - 1)
+  expect(res).toBeGreaterThan(200) // west-ish
+  expect(res).toBeLessThan(300)
+})
+
+test(`cog inspection`, () => {
+  let mes = test_mes()
+  // mes.vessel_trajectory.points[1].x = 30
+  let res = heading_scorer(mes.vessel_trajectory, mes.ais_messages)
+  console.log(res)
 })

@@ -5,7 +5,7 @@ import { isFunctionTypeNode } from 'typescript'
 import { DELAY_TIME_1 } from 'bullmq'
 import regression from 'regression'
 import { forEach, SQRT1_2 } from 'mathjs'
-import { Trajectory } from '../../AIS-models/models'
+import { AisMessage, Trajectory } from '../../AIS-models/models'
 
 export default class VesselScore implements IVesselScore, IVesselAnalysis, TrustScore {
   calculateVesselScore(anal: IVesselAnalysis): TrustScore {
@@ -31,17 +31,25 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
     return score_calculator(scores, old_score_numerator, old_score_denominator)
   }
   cog_analysis(data: Messages): number {
-    throw new Error('Method not implemented.')
+    return heading_scorer(data.vessel_trajectory, data.ais_messages)
   }
+  //TODO: skal den overhovedet eksistere? og hvad skal den gøre?
   head_analysis(data: Messages): number {
     throw new Error('Method not implemented.')
   }
   speed_analysis(data: Messages): number {
-    throw new Error('Method not implemented.')
+    const frac = score_calculator(
+      sog_pairings(data).map((x) => Math.abs(x[0] - x[1])),
+      1,
+      1
+    )
+    return frac[0] / frac[1]
+    // throw new Error('Method not implemented.')
   }
   position_analysis(data: Messages): number {
-    let sogs = sog_pairings(data)
-    return sog_error(sogs)
+    // let sogs = sog_pairings(data)
+    // return sog_error(sogs)
+    throw new Error('Method not implemented.')
   }
 
   average_weighted_score!: number
@@ -57,14 +65,14 @@ function score_calculator(
   old_score_numerator: number,
   old_score_denominator: number
 ): [number, number] {
-  const decay_factor = 0.99
+  const DECAY_FACTOR = 0.99
 
-  let numerator = scores.map((s, i) => s * Math.pow(decay_factor, i + 1)).reduce((acc, val) => acc + val)
+  let numerator = scores.map((s, i) => s * Math.pow(DECAY_FACTOR, i + 1)).reduce((acc, val) => acc + val, 0)
 
-  let denominator = scores.map((_, i) => Math.pow(decay_factor, i + 1)).reduce((acc, val) => acc + val)
+  let denominator = scores.map((_, i) => Math.pow(DECAY_FACTOR, i + 1)).reduce((acc, val) => acc + val, 0)
 
-  numerator = numerator + old_score_numerator * Math.pow(decay_factor, scores.length)
-  denominator = denominator + old_score_denominator * Math.pow(decay_factor, scores.length)
+  numerator = numerator + old_score_numerator * Math.pow(DECAY_FACTOR, scores.length)
+  denominator = denominator + old_score_denominator * Math.pow(DECAY_FACTOR, scores.length)
 
   return [numerator, denominator]
 }
@@ -123,6 +131,39 @@ export function haversine_dist(point_test: [number, number], point_real: [number
   )
 }
 
+export function bearing(lon1: number, lat1: number, lon2: number, lat2: number): number {
+  const r_lon1 = lon1 * (Math.PI / 180)
+  const r_lat1 = lat1 * (Math.PI / 180)
+  const r_lon2 = lon2 * (Math.PI / 180)
+  const r_lat2 = lat2 * (Math.PI / 180)
+  const delta_lon = r_lon2 - r_lon1
+
+  const y = Math.sin(delta_lon) * Math.cos(r_lat2)
+  const x = Math.cos(r_lat1) * Math.sin(r_lat2) - Math.sin(r_lat1) * Math.cos(r_lat2) * Math.cos(delta_lon)
+
+  const theta = Math.atan2(y, x)
+
+  return ((theta * 180) / Math.PI + 360) % 360
+}
+
+export function heading_scorer({ points }: LineString, messages: AisMessage[]): number {
+  let shifted = structuredClone(points)
+  shifted.shift()
+
+  let computed_bearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
+
+  const TOLERANCE = 15 //TODO: Completely arbitrary :D
+  let nice_cog = zip(computed_bearings, messages)
+    .map((x) => [x[0], x[1].cog])
+    .filter((x): x is [number, number] => x[1] !== undefined || x !== null)
+    .map((x) => Math.abs(x[0] - x[1]))
+    .filter((p) => p - TOLERANCE > 0)
+    .map((x) => x / 360)
+
+  let res = score_calculator(nice_cog, 1, 1)
+  return res[0] / res[1]
+}
+
 //? why is this not a standard library function?
 function zip<a, b>(left: a[], right: b[]): [a, b][] {
   if (right.length > left.length) {
@@ -157,7 +198,7 @@ export function sog_pairings(mes: Messages): [number, number][] {
   let sogs = mes.ais_messages.map((x) => x.sog)
   let soggy: [number, number][] = zip(computed_sogs, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
-    .map((x) => [x[0], x[1] * KNOT_TO_MS])
+    .map((x: [number, number]) => [x[0], x[1] * KNOT_TO_MS])
     .filter((x) => !x.includes(NaN))
     .filter((x) => !x.includes(Infinity)) as [number, number][]
   return soggy
