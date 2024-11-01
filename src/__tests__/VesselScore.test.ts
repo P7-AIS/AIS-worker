@@ -198,11 +198,19 @@ test('Test weighted score', () => {
   let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
   let rom: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
 
-  let points: Point[] = [point1, point2, rom, point3, point4, point5, point6, point7, point8, point9, point10]
+  let points1: Point[] = [point1, point2, rom, point3, point4, point5, point6, point7, point8, point9, point10]
 
-  let data = new Messages(10, [], new LineString(points))
+  let res_1 = new VesselScore().trajectory_analysis(points1)
 
-  let res = new VesselScore().trajectory_analysis(data)
+  let points2: Point[] = [point1, point2, point3, point4, point5, point6, point7, point8, rom, point9, point10]
+
+  let res_2 = new VesselScore().trajectory_analysis(points2)
+
+  let score_1 = res_1[0] / res_1[1]
+
+  let score_2 = res_2[0] / res_2[1]
+
+  expect(score_1).toBeLessThan(score_2)
 })
 
 test(`test angle between two ellipsoidal points`, () => {

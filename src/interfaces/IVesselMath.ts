@@ -1,3 +1,4 @@
+import { Point } from 'wkx'
 import { AISJobData } from '../../AIS-models/models'
 import { Messages } from '../implementations/Messages'
 
@@ -11,11 +12,11 @@ export interface TrustScore {
 }
 
 export interface IVesselScore {
-  calculateVesselScore(anal: IVesselAnalysis): TrustScore
+  calculateVesselScore(): TrustScore
 }
 
 export interface IVesselAnalysis {
-  trajectory_analysis(data: Messages): [number, number]
+  trajectory_analysis(data: Point[]): [number, number]
   cog_analysis(data: Messages): [number, number]
   head_analysis(data: Messages): [number, number]
   speed_analysis(data: Messages): [number, number]
