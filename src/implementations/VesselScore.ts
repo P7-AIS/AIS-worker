@@ -8,18 +8,15 @@ import { forEach, SQRT1_2 } from 'mathjs'
 import { AisMessage, Trajectory } from '../../AIS-models/models'
 
 export default class VesselScore implements IVesselScore, IVesselAnalysis, TrustScore {
-  calculateVesselScore(anal: IVesselAnalysis): TrustScore {
+  calculateVesselScore(): TrustScore {
     throw new Error('Method not implemented.')
   }
-
   // The idea is to utilize curve fitting
   trajectory_analysis(
-    data: Messages,
+    points: Point[],
     old_score_numerator: number = 1,
     old_score_denominator: number = 1
   ): [number, number] {
-    let points = data.vessel_trajectory.points
-
     let points_len = points.length - 2
 
     let scores: number[] = []
