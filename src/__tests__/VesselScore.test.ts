@@ -146,7 +146,7 @@ test('Curve fit 3D points', () => {
 
 test('point analysis', () => {
   let scorer = new VesselScore()
-  let res = scorer.position_analysis(test_mes())
+  let res = scorer.speed_analysis(test_mes())
 
   expect(res).toBeGreaterThan(0)
   expect(res).not.toEqual(Infinity)
