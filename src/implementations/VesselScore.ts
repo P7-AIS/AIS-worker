@@ -41,11 +41,8 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
       1
     )
     return frac
-    // throw new Error('Method not implemented.')
   }
   position_analysis(data: Messages): [number, number] {
-    // let sogs = sog_pairings(data)
-    // return sog_error(sogs)
     throw new Error('Method not implemented.')
   }
 
@@ -128,7 +125,11 @@ export function haversine_dist(point_test: [number, number], point_real: [number
   )
 }
 
+/**
+ * Computes the bearing between two points, in degrees
+ */
 export function bearing(lon1: number, lat1: number, lon2: number, lat2: number): number {
+  // map lon/lat's to radians
   const r_lon1 = lon1 * (Math.PI / 180)
   const r_lat1 = lat1 * (Math.PI / 180)
   const r_lon2 = lon2 * (Math.PI / 180)
@@ -158,8 +159,6 @@ export function heading_scorer({ points }: LineString, messages: AisMessage[]): 
     .map((x) => x / 360)
 
   return nice_cog
-  // let res = score_calculator(nice_cog, 1, 1)
-  // return res[0] / res[1]
 }
 
 //? why is this not a standard library function?
