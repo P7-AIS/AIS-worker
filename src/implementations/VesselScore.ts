@@ -31,17 +31,25 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
     return score_calculator(scores, old_score_numerator, old_score_denominator)
   }
   cog_analysis(data: Messages): number {
-    throw new Error('Method not implemented.')
+    return heading_scorer(data.vessel_trajectory, data.ais_messages)
   }
+  //TODO: skal den overhovedet eksistere? og hvad skal den gøre?
   head_analysis(data: Messages): number {
     throw new Error('Method not implemented.')
   }
   speed_analysis(data: Messages): number {
-    throw new Error('Method not implemented.')
+    const frac = score_calculator(
+      sog_pairings(data).map((x) => Math.abs(x[0] - x[1])),
+      1,
+      1
+    )
+    return frac[0] / frac[1]
+    // throw new Error('Method not implemented.')
   }
   position_analysis(data: Messages): number {
-    let sogs = sog_pairings(data)
-    return sog_error(sogs)
+    // let sogs = sog_pairings(data)
+    // return sog_error(sogs)
+    throw new Error('Method not implemented.')
   }
 
   average_weighted_score!: number
@@ -138,13 +146,13 @@ export function bearing(lon1: number, lat1: number, lon2: number, lat2: number):
   return ((theta * 180) / Math.PI + 360) % 360
 }
 
-export function heading_scorer({ points }: LineString, messages: AisMessage[]): Number {
+export function heading_scorer({ points }: LineString, messages: AisMessage[]): number {
   let shifted = structuredClone(points)
   shifted.shift()
 
   let computed_bearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
 
-  const TOLERANCE = 15
+  const TOLERANCE = 15 //TODO: Completely arbitrary :D
   let nice_cog = zip(computed_bearings, messages)
     .map((x) => [x[0], x[1].cog])
     .filter((x): x is [number, number] => x[1] !== undefined || x !== null)
