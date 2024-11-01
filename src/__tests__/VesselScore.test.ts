@@ -221,5 +221,5 @@ test(`cog inspection`, () => {
   let mes = test_mes()
   // mes.vessel_trajectory.points[1].x = 30
   let res = heading_scorer(mes.vessel_trajectory, mes.ais_messages)
-  console.log(res)
+  //console.log(res)
 })
