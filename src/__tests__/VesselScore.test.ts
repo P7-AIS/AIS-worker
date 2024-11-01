@@ -146,8 +146,9 @@ test('Curve fit 3D points', () => {
 
 test('point analysis', () => {
   let scorer = new VesselScore()
-  let res = scorer.speed_analysis(test_mes())
+  let frac = scorer.speed_analysis(test_mes())
 
+  let res = frac[0] / frac[1]
   expect(res).toBeGreaterThan(0)
   expect(res).not.toEqual(Infinity)
   expect(res).not.toEqual(Infinity - 1)
@@ -227,7 +228,11 @@ test(`test angle between two ellipsoidal points`, () => {
 
 test(`cog inspection`, () => {
   let mes = test_mes()
-  // mes.vessel_trajectory.points[1].x = 30
-  let res = heading_scorer(mes.vessel_trajectory, mes.ais_messages)
-  //console.log(res)
+  let frac = new VesselScore().cog_analysis(mes)
+  // console.log(frac)
+  let res = frac[0] / frac[1]
+  expect(res).toBeDefined
+  expect(res).not.toBeNaN
+  expect(res).toBeGreaterThanOrEqual(0)
+  expect(res).toBeLessThanOrEqual(1)
 })

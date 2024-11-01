@@ -27,23 +27,23 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
 
     return score_calculator(scores, old_score_numerator, old_score_denominator)
   }
-  cog_analysis(data: Messages): number {
-    return heading_scorer(data.vessel_trajectory, data.ais_messages)
+  cog_analysis(data: Messages): [number, number] {
+    return score_calculator(heading_scorer(data.vessel_trajectory, data.ais_messages), 1, 1)
   }
   //TODO: skal den overhovedet eksistere? og hvad skal den gøre?
-  head_analysis(data: Messages): number {
+  head_analysis(data: Messages): [number, number] {
     throw new Error('Method not implemented.')
   }
-  speed_analysis(data: Messages): number {
+  speed_analysis(data: Messages): [number, number] {
     const frac = score_calculator(
       sog_pairings(data).map((x) => Math.abs(x[0] - x[1])),
       1,
       1
     )
-    return frac[0] / frac[1]
+    return frac
     // throw new Error('Method not implemented.')
   }
-  position_analysis(data: Messages): number {
+  position_analysis(data: Messages): [number, number] {
     // let sogs = sog_pairings(data)
     // return sog_error(sogs)
     throw new Error('Method not implemented.')
@@ -143,7 +143,7 @@ export function bearing(lon1: number, lat1: number, lon2: number, lat2: number):
   return ((theta * 180) / Math.PI + 360) % 360
 }
 
-export function heading_scorer({ points }: LineString, messages: AisMessage[]): number {
+export function heading_scorer({ points }: LineString, messages: AisMessage[]): number[] {
   let shifted = structuredClone(points)
   shifted.shift()
 
@@ -157,8 +157,9 @@ export function heading_scorer({ points }: LineString, messages: AisMessage[]): 
     .filter((p) => p - TOLERANCE > 0)
     .map((x) => x / 360)
 
-  let res = score_calculator(nice_cog, 1, 1)
-  return res[0] / res[1]
+  return nice_cog
+  // let res = score_calculator(nice_cog, 1, 1)
+  // return res[0] / res[1]
 }
 
 //? why is this not a standard library function?
