@@ -192,12 +192,14 @@ export function sog_pairings(mes: Messages): [number, number][] {
     .map((x) => x.dist / x.delta_time)
 
   const KNOT_TO_MS = 1.852 / 3.6 //0.5144444444
+  const TOLERANCE_RATIO = 0.1
   let sogs = mes.ais_messages.map((x) => x.sog)
   let soggy: [number, number][] = zip(computed_sogs, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
     .map((x: [number, number]) => [x[0], x[1] * KNOT_TO_MS])
     .filter((x) => !x.includes(NaN))
-    .filter((x) => !x.includes(Infinity)) as [number, number][]
+    .filter((x): x is [number, number] => !x.includes(Infinity))
+    .filter((x) => (x[0] - x[1]) / x[1] > TOLERANCE_RATIO) as [number, number][] //if error is too small, then discard
   return soggy
 }
 
