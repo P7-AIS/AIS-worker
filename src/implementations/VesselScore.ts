@@ -219,7 +219,8 @@ export function trajectory_single_score(points: Point[]): number {
 
   let distance = haversine_dist([control_point.x, control_point.y], [x_pos, y_pos])
 
-  distance = distance - 10
+  const TOLERANCE = 10
+  distance = distance - TOLERANCE
 
   distance = distance < 0 ? 0 : distance
 
