@@ -178,11 +178,11 @@ function sog_error(sogs: [number, number][]): number {
 }
 
 // pairs computed SOG's with reported SOG's
-export function sog_pairings(mes: Messages): [number, number][] {
-  let points = structuredClone(mes.vessel_trajectory.points)
-  points.shift()
+export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): [number, number][] {
+  let shifted = structuredClone(vessel_trajectory.points)
+  shifted.shift()
 
-  let computed_sogs = zip(mes.vessel_trajectory.points, points) // create a list of pairs [point__n,point__n+1]
+  let computed_sogs = zip(vessel_trajectory.points, shifted) // create a list of pairs [point__n,point__n+1]
     .map((pair) => {
       return {
         dist: haversine_dist([pair[0].x, pair[0].y], [pair[1].x, pair[1].y]),
@@ -193,7 +193,7 @@ export function sog_pairings(mes: Messages): [number, number][] {
 
   const KNOT_TO_MS = 1.852 / 3.6 //0.5144444444
   const TOLERANCE_RATIO = 0.1
-  let sogs = mes.ais_messages.map((x) => x.sog)
+  let sogs = ais_messages.map((x) => x.sog)
   let soggy: [number, number][] = zip(computed_sogs, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
     .map((x: [number, number]) => [x[0], x[1] * KNOT_TO_MS])
