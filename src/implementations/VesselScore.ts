@@ -1,5 +1,5 @@
 import { LineString, Point } from 'wkx'
-import { IVesselScore, IVesselAnalysis, TrustScore } from '../interfaces/IVesselMath'
+import { IVesselScore, IVesselAnalysis } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
 import { isFunctionTypeNode } from 'typescript'
 import { DELAY_TIME_1 } from 'bullmq'
@@ -30,15 +30,11 @@ export default class VesselScore implements IScorer, IVesselScore, IVesselAnalys
     return score_calculator(scores)
   }
   cog_analysis(data: Messages): number {
-    return score_calculator(heading_scorer(data.vessel_trajectory, data.ais_messages), 1, 1)
+    return score_calculator(heading_scorer(data.vessel_trajectory, data.ais_messages))
   }
 
   speed_analysis(data: Messages): number {
-    const frac = score_calculator(
-      sog_pairings(data).map((x) => Math.abs(x[0] - x[1])),
-      1,
-      1
-    )
+    const frac = score_calculator(sog_pairings(data).map((x) => Math.abs(x[0] - x[1])))
     return frac
   }
 
