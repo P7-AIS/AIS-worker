@@ -1,7 +1,7 @@
 import { Messages } from '../implementations/Messages'
 
 export interface IVesselScore {
-  calculateVesselScore(): number
+  calculateVesselScore(messages: Messages): number
 }
 
 export interface IVesselAnalysis {
