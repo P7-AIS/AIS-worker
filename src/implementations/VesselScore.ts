@@ -2,12 +2,34 @@ import { LineString, Point } from 'wkx'
 import { IVesselAnalysis } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
 import regression from 'regression'
-import { AISJobData, AISJobResult, AisMessage } from '../../AIS-models/models'
+import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
 
 export default class VesselScore implements IScorer, IVesselAnalysis {
   score(jobData: AISJobData): Promise<AISJobResult> {
-    throw new Error('Method not implemented.')
+    let mes = new Messages(jobData)
+
+    return new Promise(() => {
+      const trustworthiness = this.calculateVesselScore(mes)
+      let res: AISJobResult = {
+        mmsi: jobData.mmsi,
+        trustworthiness: trustworthiness,
+        algorithm: AISWorkerAlgorithm.SIMPLE,
+      }
+      return res
+    })
+  }
+  calculateVesselScore(messages: Messages): number {
+    //? should weights sum to 1?
+    const TRAJ_W = 0.5
+    const COG_W = 0.25
+    const SOG_W = 0.25
+
+    let traj_score = this.trajectory_analysis(structuredClone(messages))
+    let cog_score = this.cog_analysis(structuredClone(messages))
+    let sog_score = this.speed_analysis(structuredClone(messages))
+
+    return traj_score * TRAJ_W + cog_score * COG_W + sog_score * SOG_W
   }
   // The idea is to utilize curve fitting
   trajectory_analysis(message: Messages): number {
