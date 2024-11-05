@@ -200,11 +200,14 @@ test('Test weighted score', () => {
 
   let points1: Point[] = [point1, point2, rom, point3, point4, point5, point6, point7, point8, point9, point10]
 
-  let res_1 = new VesselScore().trajectory_analysis(points1)
+  let message1: Messages = new Messages(0, [], new LineString(points1, 4326))
+
+  let res_1 = new VesselScore().trajectory_analysis(message1)
 
   let points2: Point[] = [point1, point2, point3, point4, point5, point6, point7, point8, rom, point9, point10]
+  let message2: Messages = new Messages(0, [], new LineString(points2, 4326))
 
-  let res_2 = new VesselScore().trajectory_analysis(points2)
+  let res_2 = new VesselScore().trajectory_analysis(message2)
 
   let score_1 = res_1[0] / res_1[1]
 

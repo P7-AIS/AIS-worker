@@ -13,10 +13,12 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
   }
   // The idea is to utilize curve fitting
   trajectory_analysis(
-    points: Point[],
+    message: Messages,
     old_score_numerator: number = 1,
     old_score_denominator: number = 1
   ): [number, number] {
+    let points = message.vessel_trajectory.points
+
     let points_len = points.length - 2
 
     let scores: number[] = []
