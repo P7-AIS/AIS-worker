@@ -16,9 +16,9 @@ export interface IVesselScore {
 }
 
 export interface IVesselAnalysis {
-  trajectory_analysis(data: Point[]): [number, number]
-  cog_analysis(data: Messages): [number, number]
-  head_analysis(data: Messages): [number, number]
-  speed_analysis(data: Messages): [number, number]
-  position_analysis(data: Messages): [number, number]
+  trajectory_analysis(data: Messages): number
+  cog_analysis(data: Messages): number
+  head_analysis(data: Messages): number
+  speed_analysis(data: Messages): number
+  position_analysis(data: Messages): number
 }

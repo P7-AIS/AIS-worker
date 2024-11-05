@@ -4,8 +4,8 @@
   "description": "",
   "main": "worker.js",
   "scripts": {
-    "start": "node-22 dist/worker.js",
-    "dev": "ts-node src/worker.ts",
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.ts",
     "build": "tsc",
     "docker:build": "docker compose build",
     "docker:run": "docker compose up -d",
@@ -17,9 +17,9 @@
   "dependencies": {
     "bullmq": "^5.13.2",
     "dotenv": "^16.4.5",
-    "ioredis": "^5.4.1",
     "mathjs": "^13.2.0",
     "regression": "^2.0.1",
+    "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2",
     "wkx": "^0.5.0"
