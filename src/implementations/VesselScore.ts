@@ -5,18 +5,18 @@ import { isFunctionTypeNode } from 'typescript'
 import { DELAY_TIME_1 } from 'bullmq'
 import regression from 'regression'
 import { forEach, SQRT1_2 } from 'mathjs'
-import { AisMessage, Trajectory } from '../../AIS-models/models'
+import { AISJobData, AISJobResult, AisMessage, OldScore, Trajectory } from '../../AIS-models/models'
+import IScorer from '../interfaces/IScorer'
 
-export default class VesselScore implements IVesselScore, IVesselAnalysis, TrustScore {
-  calculateVesselScore(): TrustScore {
+export default class VesselScore implements IScorer, IVesselScore, IVesselAnalysis {
+  score(jobData: AISJobData): Promise<AISJobResult> {
+    throw new Error('Method not implemented.')
+  }
+  calculateVesselScore(): number {
     throw new Error('Method not implemented.')
   }
   // The idea is to utilize curve fitting
-  trajectory_analysis(
-    message: Messages,
-    old_score_numerator: number = 1,
-    old_score_denominator: number = 1
-  ): [number, number] {
+  trajectory_analysis(message: Messages): number {
     let points = message.vessel_trajectory.points
 
     let points_len = points.length - 2
@@ -27,25 +27,19 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
       scores.push(trajectory_single_score([points[i - 2], points[i - 1], points[i + 1], points[i + 2], points[i]]))
     }
 
-    return score_calculator(scores, old_score_numerator, old_score_denominator)
+    return score_calculator(scores)
   }
-  cog_analysis(data: Messages): [number, number] {
+  cog_analysis(data: Messages): number {
     return score_calculator(heading_scorer(data.vessel_trajectory, data.ais_messages), 1, 1)
   }
-  //TODO: skal den overhovedet eksistere? og hvad skal den gøre?
-  head_analysis(data: Messages): [number, number] {
-    throw new Error('Method not implemented.')
-  }
-  speed_analysis(data: Messages): [number, number] {
+
+  speed_analysis(data: Messages): number {
     const frac = score_calculator(
       sog_pairings(data).map((x) => Math.abs(x[0] - x[1])),
       1,
       1
     )
     return frac
-  }
-  position_analysis(data: Messages): [number, number] {
-    throw new Error('Method not implemented.')
   }
 
   average_weighted_score!: number
@@ -56,21 +50,14 @@ export default class VesselScore implements IVesselScore, IVesselAnalysis, Trust
   position_score!: number
 }
 
-function score_calculator(
-  scores: number[],
-  old_score_numerator: number,
-  old_score_denominator: number
-): [number, number] {
+function score_calculator(scores: number[]): number {
   const DECAY_FACTOR = 0.99
 
   let numerator = scores.map((s, i) => s * Math.pow(DECAY_FACTOR, i + 1)).reduce((acc, val) => acc + val, 0)
 
   let denominator = scores.map((_, i) => Math.pow(DECAY_FACTOR, i + 1)).reduce((acc, val) => acc + val, 0)
 
-  numerator = numerator + old_score_numerator * Math.pow(DECAY_FACTOR, scores.length)
-  denominator = denominator + old_score_denominator * Math.pow(DECAY_FACTOR, scores.length)
-
-  return [numerator, denominator]
+  return numerator / denominator
 }
 
 export function normalize_points(heading: number, points: Point[]): Point[] {
@@ -227,5 +214,5 @@ export function trajectory_single_score(points: Point[]): number {
 
   distance = distance < 0 ? 0 : distance
 
-  return 1 / (1 + Math.pow(distance, 2))
+  return 1 / (1 + Math.pow(distance, 2) / 1000)
 }
