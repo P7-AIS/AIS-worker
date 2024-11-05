@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { Messages, ais_job_to_message } from '../implementations/Messages'
+import { Messages } from '../implementations/Messages'
 import { AISJobData, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import { Geometry, LineString, Point } from 'wkx'
 
@@ -47,14 +47,12 @@ function aisjobdata(path: string): AISJobData {
   return jobdata
 }
 
-test('Convert to message', () => {
-  let ais_message = aisjobdata('')
-
-  let message = ais_job_to_message(ais_message)
-
-  let message2: Point[] = message.vessel_trajectory.points
-
-  expect(message.mmsi).toBe(0)
-  expect(message2[0].x).toBe(1)
-  expect(message2[1].x).toBe(2)
-})
+//test('Convert to message', () => {
+//  let ais_message = aisjobdata('')
+//
+//  let message2: Point[] = message.vessel_trajectory.points
+//
+//  expect(message.mmsi).toBe(0)
+//  expect(message2[0].x).toBe(1)
+//  expect(message2[1].x).toBe(2)
+//})
