@@ -1,11 +1,8 @@
 import { LineString, Point } from 'wkx'
 import { IVesselScore, IVesselAnalysis } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
-import { isFunctionTypeNode } from 'typescript'
-import { DELAY_TIME_1 } from 'bullmq'
 import regression from 'regression'
-import { forEach, SQRT1_2 } from 'mathjs'
-import { AISJobData, AISJobResult, AisMessage, OldScore, Trajectory } from '../../AIS-models/models'
+import { AISJobData, AISJobResult, AisMessage } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
 
 export default class VesselScore implements IScorer, IVesselScore, IVesselAnalysis {
