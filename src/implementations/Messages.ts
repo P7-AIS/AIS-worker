@@ -6,17 +6,11 @@ import { AISJobData, AisMessage } from '../../AIS-models/models'
 //     trajectory:
 // }
 
-export function ais_job_to_message(data: AISJobData): Messages {
-  let trajectory = Geometry.parse(data.trajectory.binPath) as unknown as LineString
-
-  return new Messages(data.mmsi, data.aisMessages, trajectory)
-}
-
 export class Messages implements IMessageConverter, VesselMessage {
-  constructor(mmsi: number, ais_messages: AisMessage[], vessel_trajectory: LineString) {
-    this.mmsi = mmsi
-    this.ais_messages = ais_messages
-    this.vessel_trajectory = vessel_trajectory
+  constructor(data: AISJobData) {
+    this.mmsi = data.mmsi
+    this.ais_messages = data.aisMessages
+    this.vessel_trajectory = Geometry.parse(data.trajectory.binPath) as unknown as LineString
   }
 
   mmsi: number
