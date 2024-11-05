@@ -1,11 +1,11 @@
 import { LineString, Point } from 'wkx'
-import { IVesselScore, IVesselAnalysis } from '../interfaces/IVesselMath'
+import { IVesselAnalysis } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
 import regression from 'regression'
 import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
 
-export default class VesselScore implements IScorer, IVesselScore, IVesselAnalysis {
+export default class VesselScore implements IScorer, IVesselAnalysis {
   score(jobData: AISJobData): Promise<AISJobResult> {
     let mes = new Messages(jobData)
 
@@ -53,13 +53,6 @@ export default class VesselScore implements IScorer, IVesselScore, IVesselAnalys
     const frac = score_calculator(sog_pairings(data).map((x) => Math.abs(x[0] - x[1])))
     return frac
   }
-
-  average_weighted_score!: number
-  trajectory_score!: number
-  cog_score!: number
-  head_score!: number
-  speed_score!: number
-  position_score!: number
 }
 
 function score_calculator(scores: number[]): number {
