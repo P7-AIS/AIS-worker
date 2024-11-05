@@ -1,5 +1,3 @@
-import { Point } from 'wkx'
-import { AISJobData, OldScore } from '../../AIS-models/models'
 import { Messages } from '../implementations/Messages'
 
 export interface IVesselScore {

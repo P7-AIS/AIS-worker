@@ -1,16 +1,12 @@
 import { Point } from 'wkx'
-import { IVesselScore, IVesselAnalysis, TrustScore } from '../interfaces/IVesselMath'
+import { IVesselAnalysis } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
-import { isFunctionTypeNode } from 'typescript'
 import { create, all } from 'mathjs'
 import IScorer from '../interfaces/IScorer'
 import { AISJobData, AISJobResult } from '../../AIS-models/models'
 
-export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnalysis, TrustScore {
+export default class SimpleScorer implements IScorer, IVesselAnalysis {
   score(jobData: AISJobData): Promise<AISJobResult> {
-    throw new Error('Method not implemented.')
-  }
-  calculateVesselScore(anal: IVesselAnalysis): TrustScore {
     throw new Error('Method not implemented.')
   }
 
