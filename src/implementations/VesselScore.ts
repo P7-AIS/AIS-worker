@@ -37,10 +37,6 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
     let cog_score = this.cog_analysis(structuredClone(messages))
     let sog_score = this.speed_analysis(structuredClone(messages))
 
-    this.orig_traj_score = traj_score
-    this.orig_cog_score = cog_score
-    this.orig_sog_score = sog_score
-
     if (isNaN(traj_score)) {
       traj_score = 1
       TRAJ_W = 0
@@ -55,6 +51,9 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
       sog_score = 1
       SOG_W = 0
     }
+    this.orig_traj_score = traj_score
+    this.orig_cog_score = cog_score
+    this.orig_sog_score = sog_score
 
     //console.log('traj_score: ' + traj_score)
     //console.log('cog_score: ' + cog_score)
