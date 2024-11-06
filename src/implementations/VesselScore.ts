@@ -100,10 +100,11 @@ function trust_reason(traj_score: number, cog_score: number, sog_score: number):
   const TRAJ_REASON = 'bad trajectory'
   const COG_REASON = 'bad COG'
   const SOG_REASON = 'bad SOG'
+  const SEPARATOR = ' | '
 
   reason = traj_score > TRAJ_THRES ? '' : TRAJ_REASON
-  reason = reason + (cog_score > COG_THRES ? '' : COG_REASON)
-  reason = reason + (sog_score > SOG_THRES ? '' : SOG_REASON)
+  reason = reason + (cog_score > COG_THRES ? '' : SEPARATOR + COG_REASON)
+  reason = reason + (sog_score > SOG_THRES ? '' : SEPARATOR + SOG_REASON)
 
   return reason
 }
