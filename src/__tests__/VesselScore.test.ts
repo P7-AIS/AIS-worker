@@ -5,7 +5,7 @@ import VesselScore, {
   normalize_points,
   solveQuadraticCoeeficients,
   trajectory_single_score,
-} from '../implementations/VesselScore'
+} from '../implementations/VesselScorer'
 import { AISJobData, AisMessage, AISWorkerAlgorithm, Trajectory } from '../../AIS-models/models'
 import { LineString, Point } from 'wkx'
 import { Messages } from '../implementations/Messages'
