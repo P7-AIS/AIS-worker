@@ -63,7 +63,7 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
 
     //console.log(score)
 
-    score = isNaN(score) || !isFinite(score) ? 0 : score
+    score = isNaN(score) || !isFinite(score) ? 1 : score // We can't say much about a ship that does not provide data enough for analysis.
     return score
   }
   // The idea is to utilize curve fitting
@@ -91,7 +91,7 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
 }
 
 function trust_reason(traj_score: number, cog_score: number, sog_score: number): string {
-  let reason = ''
+  let reason: string[] = []
   //TODO: completely arbitrary
   const TRAJ_THRES = 0.5
   const COG_THRES = 0.5
@@ -101,11 +101,19 @@ function trust_reason(traj_score: number, cog_score: number, sog_score: number):
   const SOG_REASON = 'bad SOG'
   const SEPARATOR = ' | '
 
-  reason = traj_score > TRAJ_THRES ? '' : TRAJ_REASON
-  reason = reason + (cog_score > COG_THRES ? '' : SEPARATOR + COG_REASON)
-  reason = reason + (sog_score > SOG_THRES ? '' : SEPARATOR + SOG_REASON)
+  if (traj_score < TRAJ_THRES) {
+    reason.push(TRAJ_REASON)
+  }
 
-  return reason
+  if (cog_score < COG_THRES) {
+    reason.push(COG_REASON)
+  }
+
+  if (sog_score < SOG_THRES) {
+    reason.push(SOG_REASON)
+  }
+
+  return reason.join(' | ')
 }
 
 function score_calculator(scores: number[]): number {
