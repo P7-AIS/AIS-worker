@@ -75,7 +75,7 @@ function test_points(): Point[] {
   return [point1, point2, point3, point4, point5, point6, point7, point8, point9, point10, point11]
 }
 
-function test_mes(): Messages {
+function test_mes(): AISJobData {
   // start time:    1725863029.3645544
   // end time:      1725863341.3673398
   // sog: ~11.5
@@ -106,7 +106,7 @@ function test_mes(): Messages {
     trajectory: traj,
   }
 
-  return new Messages(data)
+  return data
 }
 
 test('Curve fit 3D points', () => {
@@ -159,11 +159,11 @@ test('Curve fit 3D points', () => {
 //   console.log(res);
 // });
 
-test.only('point analysis', () => {
+test('point analysis', () => {
   let scorer = new VesselScore()
-  let res = scorer.speed_analysis(test_mes())
+  let res = scorer.speed_analysis(new Messages(test_mes()))
 
-  console.log(res)
+  // console.log(res)
 
   expect(res).toBeGreaterThan(0)
   expect(res).toBeLessThanOrEqual(1)
@@ -202,7 +202,7 @@ test('Test single score for Linestring', () => {
 })
 
 test('Test weighted score', () => {
-  let message = test_mes()
+  let message = new Messages(test_mes())
   let rom: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
   let message1 = structuredClone(message)
 
@@ -233,11 +233,24 @@ test(`test angle between two ellipsoidal points`, () => {
 })
 
 test(`cog inspection`, () => {
-  let mes = test_mes()
+  let mes = new Messages(test_mes())
   let res = new VesselScore().cog_analysis(mes)
   //console.log(res)
   expect(res).toBeDefined
   expect(res).not.toBeNaN
   expect(res).toBeGreaterThanOrEqual(0)
   expect(res).toBeLessThanOrEqual(1)
+})
+
+test(`scorer function`, () => {
+  let jobdata = test_mes()
+
+  new VesselScore().score(jobdata).then((res) => {
+    let score = res.trustworthiness
+    console.log(score)
+    expect(score).toBeDefined
+    expect(score).not.toBeNaN
+    expect(score).toBeGreaterThanOrEqual(0)
+    expect(score).toBeLessThanOrEqual(1)
+  })
 })

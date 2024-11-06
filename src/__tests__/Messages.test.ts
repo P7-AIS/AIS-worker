@@ -56,3 +56,7 @@ function aisjobdata(path: string): AISJobData {
 //  expect(message2[0].x).toBe(1)
 //  expect(message2[1].x).toBe(2)
 //})
+
+test(`delete when creating tes`, () => {
+  expect(1 + 1).toBeGreaterThan(1)
+})
