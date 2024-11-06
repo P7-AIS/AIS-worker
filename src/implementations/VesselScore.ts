@@ -149,8 +149,8 @@ export function heading_scorer({ points }: LineString, messages: AisMessage[]): 
     .map((x) => [x[0], x[1].cog])
     .filter((x): x is [number, number] => x[1] !== undefined || x !== null)
     .map((x) => Math.abs(x[0] - x[1]))
-    .filter((p) => p - TOLERANCE > 0)
-    .map((x) => x / 360)
+    .map((x) => Math.max(x - TOLERANCE, 0))
+    .map((x) => 1 - x / 360)
 
   return nice_cog
 }
@@ -215,9 +215,7 @@ export function trajectory_single_score(points: Point[]): number {
   let distance = haversine_dist([control_point.x, control_point.y], [x_pos, y_pos])
 
   const TOLERANCE = 10
-  distance = distance - TOLERANCE
-
-  distance = distance < 0 ? 0 : distance
+  distance = Math.max(distance - TOLERANCE, 0)
 
   return 1 / (1 + Math.pow(distance, 2) / 1000)
 }

@@ -232,7 +232,7 @@ test(`test angle between two ellipsoidal points`, () => {
 test(`cog inspection`, () => {
   let mes = test_mes()
   let res = new VesselScore().cog_analysis(mes)
-  // console.log(frac)
+  //console.log(res)
   expect(res).toBeDefined
   expect(res).not.toBeNaN
   expect(res).toBeGreaterThanOrEqual(0)
