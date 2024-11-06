@@ -8,12 +8,20 @@ import { SQRT1_2 } from 'mathjs'
 import { DELAY_TIME_1 } from 'bullmq'
 
 export default class VesselScore implements IScorer, IVesselAnalysis {
+  orig_traj_score: number | undefined
+  orig_cog_score: number | undefined
+  orig_sog_score: number | undefined
+
   score(jobData: AISJobData): Promise<AISJobResult> {
     let mes = new Messages(jobData)
     const trustworthiness = this.calculateVesselScore(mes)
+
+    let reason = reason_s(this.orig_traj_score!, this.orig_cog_score!, this.orig_sog_score!)
+
     let res: AISJobResult = {
       mmsi: jobData.mmsi,
       trustworthiness: trustworthiness,
+      reason: reason,
       algorithm: AISWorkerAlgorithm.SIMPLE,
     }
 
@@ -28,6 +36,10 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
     let traj_score = this.trajectory_analysis(structuredClone(messages))
     let cog_score = this.cog_analysis(structuredClone(messages))
     let sog_score = this.speed_analysis(structuredClone(messages))
+
+    this.orig_traj_score = traj_score
+    this.orig_cog_score = cog_score
+    this.orig_sog_score = sog_score
 
     if (isNaN(traj_score)) {
       traj_score = 1
@@ -77,6 +89,22 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
     const scores = score_calculator(sog_pairings(data))
     return scores
   }
+}
+
+export function reason_s(traj_score: number, cog_score: number, sog_score: number): string {
+  let reason = ''
+  const TRAJ_THRES = 0.5
+  const COG_THRES = 0.5
+  const SOG_THRES = 0.5
+  const TRAJ_REASON = 'bad trajectory'
+  const COG_REASON = 'bad COG'
+  const SOG_REASON = 'bad SOG'
+
+  reason = traj_score > TRAJ_THRES ? '' : TRAJ_REASON
+  reason = reason + (cog_score! > COG_THRES ? '' : COG_REASON)
+  reason = reason + (sog_score! > SOG_THRES ? '' : SOG_REASON)
+
+  return reason
 }
 
 function score_calculator(scores: number[]): number {

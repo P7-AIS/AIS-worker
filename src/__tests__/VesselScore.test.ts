@@ -247,10 +247,21 @@ test(`scorer function`, () => {
 
   new VesselScore().score(jobdata).then((res) => {
     let score = res.trustworthiness
-    console.log(score)
+    // console.log(score)
     expect(score).toBeDefined
     expect(score).not.toBeNaN
     expect(score).toBeGreaterThanOrEqual(0)
     expect(score).toBeLessThanOrEqual(1)
+  })
+})
+
+test(`no reason`, () => {
+  let jobdata = test_mes()
+
+  new VesselScore().score(jobdata).then((res) => {
+    let reason = res.reason!
+    // console.log(score)
+    expect(reason).toBeDefined
+    expect(reason).toBe('')
   })
 })
