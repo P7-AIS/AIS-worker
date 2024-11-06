@@ -3,7 +3,11 @@ import dotenv from 'dotenv'
 import AISWorker from './implementations/AISWorker'
 import RandomScorer from './implementations/RandomScorer'
 import HashScorer from './implementations/HashScorer'
+<<<<<<< HEAD
 import SimpleScorer from './implementations/SimpleScorer'
+=======
+import VesselScore from './implementations/VesselScorer'
+>>>>>>> f940fdedddff6e1697945322463c1d4889508bc8
 
 dotenv.config()
 
