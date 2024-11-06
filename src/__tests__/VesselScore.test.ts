@@ -1,11 +1,11 @@
-import VesselScore, {
+import SimpleScorer, {
   bearing,
   haversine_dist,
   heading_scorer,
   normalize_points,
   solveQuadraticCoeeficients,
   trajectory_single_score,
-} from '../implementations/VesselScore'
+} from '../implementations/SimpleScorer'
 import { AISJobData, AisMessage, AISWorkerAlgorithm, Trajectory } from '../../AIS-models/models'
 import { LineString, Point } from 'wkx'
 import { Messages } from '../implementations/Messages'
@@ -160,7 +160,7 @@ test('Curve fit 3D points', () => {
 // });
 
 test('point analysis', () => {
-  let scorer = new VesselScore()
+  let scorer = new SimpleScorer()
   let res = scorer.speed_analysis(new Messages(test_mes()))
 
   // console.log(res)
@@ -178,7 +178,7 @@ test('Test distance calculator', () => {
 
   let res = haversine_dist([point2.x, point2.y], [point3.x, point3.y])
 
-  console.log(res), expect(res).toBeCloseTo(65354.2, 2) // Yes there is only 65 km between Rom and Paris
+  expect(res).toBeCloseTo(65354.2, 2) // Yes there is only 65 km between Rom and Paris
 })
 
 test('Test single score for Linestring', () => {
@@ -208,13 +208,13 @@ test('Test weighted score', () => {
 
   message1.vessel_trajectory.points.splice(2, 0, rom)
 
-  let res_1 = new VesselScore().trajectory_analysis(message1)
+  let res_1 = new SimpleScorer().trajectory_analysis(message1)
 
   let message2 = structuredClone(message)
 
   message2.vessel_trajectory.points.splice(8, 0, rom)
 
-  let res_2 = new VesselScore().trajectory_analysis(message2)
+  let res_2 = new SimpleScorer().trajectory_analysis(message2)
 
   expect(res_1).toBeLessThan(res_2)
 })
@@ -234,7 +234,7 @@ test(`test angle between two ellipsoidal points`, () => {
 
 test(`cog inspection`, () => {
   let mes = new Messages(test_mes())
-  let res = new VesselScore().cog_analysis(mes)
+  let res = new SimpleScorer().cog_analysis(mes)
   //console.log(res)
   expect(res).toBeDefined
   expect(res).not.toBeNaN
@@ -245,7 +245,7 @@ test(`cog inspection`, () => {
 test(`scorer function`, () => {
   let jobdata = test_mes()
 
-  new VesselScore().score(jobdata).then((res) => {
+  new SimpleScorer().score(jobdata).then((res) => {
     let score = res.trustworthiness
     // console.log(score)
     expect(score).toBeDefined
@@ -258,7 +258,7 @@ test(`scorer function`, () => {
 test(`no reason`, () => {
   let jobdata = test_mes()
 
-  new VesselScore().score(jobdata).then((res) => {
+  new SimpleScorer().score(jobdata).then((res) => {
     let reason = res.reason!
     // console.log(score)
     expect(reason).toBeDefined
