@@ -93,6 +93,7 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
 
 export function reason_s(traj_score: number, cog_score: number, sog_score: number): string {
   let reason = ''
+  //TODO: completely arbitrary
   const TRAJ_THRES = 0.5
   const COG_THRES = 0.5
   const SOG_THRES = 0.5
