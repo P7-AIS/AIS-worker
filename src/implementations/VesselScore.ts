@@ -4,8 +4,6 @@ import { Messages } from './Messages'
 import regression from 'regression'
 import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
-import { SQRT1_2 } from 'mathjs'
-import { DELAY_TIME_1 } from 'bullmq'
 
 export default class VesselScore implements IScorer, IVesselAnalysis {
   orig_traj_score: number | undefined
@@ -168,7 +166,7 @@ export function haversine_dist(point_test: [number, number], point_real: [number
     Math.asin(
       Math.sqrt(
         Math.pow(Math.sin((point_1[1] - point_2[1]) / 2), 2) +
-          Math.cos(point_1[1]) * Math.cos(point_2[1]) * Math.pow(Math.sin((point_1[0] - point_2[0]) / 2), 2)
+        Math.cos(point_1[1]) * Math.cos(point_2[1]) * Math.pow(Math.sin((point_1[0] - point_2[0]) / 2), 2)
       )
     )
   )
