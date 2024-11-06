@@ -16,7 +16,7 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
     let mes = new Messages(jobData)
     const trustworthiness = this.calculateVesselScore(mes)
 
-    let reason = reason_s(this.orig_traj_score!, this.orig_cog_score!, this.orig_sog_score!)
+    let reason = trust_reason(this.orig_traj_score!, this.orig_cog_score!, this.orig_sog_score!)
 
     let res: AISJobResult = {
       mmsi: jobData.mmsi,
@@ -91,7 +91,7 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
   }
 }
 
-export function reason_s(traj_score: number, cog_score: number, sog_score: number): string {
+function trust_reason(traj_score: number, cog_score: number, sog_score: number): string {
   let reason = ''
   //TODO: completely arbitrary
   const TRAJ_THRES = 0.5
