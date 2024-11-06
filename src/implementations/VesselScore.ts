@@ -192,8 +192,8 @@ export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): num
   let soggy: number[] = zip(computed_sogs, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
     .map((x: [number, number]) => [x[0], x[1] * KNOT_TO_MS])
-    .filter((x) => !x.includes(NaN))
-    .filter((x): x is [number, number] => !x.includes(Infinity))
+    .filter((x): x is [number, number] => Number.isFinite(x[0]) && Number.isFinite(x[1]))
+    // .filter((x): x is [number, number] => !x.includes(Infinity))
     .map((x) => Math.max(Math.abs(x[0] - x[1]) - x[1] * TOLERANCE_RATIO, 0))
     .map((x) => 1 / (1 + Math.pow(x, 2) / 10))
   //.filter((x) => (x[0] - x[1]) / x[1] > TOLERANCE_RATIO) as [number, number][] //if error is too small, then discard
