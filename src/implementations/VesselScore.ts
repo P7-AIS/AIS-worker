@@ -102,8 +102,8 @@ function trust_reason(traj_score: number, cog_score: number, sog_score: number):
   const SOG_REASON = 'bad SOG'
 
   reason = traj_score > TRAJ_THRES ? '' : TRAJ_REASON
-  reason = reason + (cog_score! > COG_THRES ? '' : COG_REASON)
-  reason = reason + (sog_score! > SOG_THRES ? '' : SOG_REASON)
+  reason = reason + (cog_score > COG_THRES ? '' : COG_REASON)
+  reason = reason + (sog_score > SOG_THRES ? '' : SOG_REASON)
 
   return reason
 }
