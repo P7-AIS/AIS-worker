@@ -10,7 +10,7 @@ export class Messages implements IMessageConverter, VesselMessage {
   constructor(data: AISJobData) {
     this.mmsi = data.mmsi
     this.ais_messages = data.aisMessages
-    this.vessel_trajectory = Geometry.parse(data.trajectory.binPath) as unknown as LineString
+    this.vessel_trajectory = Geometry.parse(Buffer.from(data.trajectory.binPath)) as unknown as LineString
   }
 
   mmsi: number

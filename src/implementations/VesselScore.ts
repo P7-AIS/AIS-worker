@@ -5,32 +5,55 @@ import regression from 'regression'
 import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
 import { SQRT1_2 } from 'mathjs'
+import { DELAY_TIME_1 } from 'bullmq'
 
 export default class VesselScore implements IScorer, IVesselAnalysis {
   score(jobData: AISJobData): Promise<AISJobResult> {
     let mes = new Messages(jobData)
+    const trustworthiness = this.calculateVesselScore(mes)
+    let res: AISJobResult = {
+      mmsi: jobData.mmsi,
+      trustworthiness: trustworthiness,
+      algorithm: AISWorkerAlgorithm.SIMPLE,
+    }
 
-    return new Promise(() => {
-      const trustworthiness = this.calculateVesselScore(mes)
-      let res: AISJobResult = {
-        mmsi: jobData.mmsi,
-        trustworthiness: trustworthiness,
-        algorithm: AISWorkerAlgorithm.SIMPLE,
-      }
-      return res
-    })
+    return new Promise((resolve) => resolve(res))
   }
   calculateVesselScore(messages: Messages): number {
     //? should weights sum to 1?
-    const TRAJ_W = 0.5
-    const COG_W = 0.25
-    const SOG_W = 0.25
+    let TRAJ_W = 0.5
+    let COG_W = 0.25
+    let SOG_W = 0.25
 
     let traj_score = this.trajectory_analysis(structuredClone(messages))
     let cog_score = this.cog_analysis(structuredClone(messages))
     let sog_score = this.speed_analysis(structuredClone(messages))
 
-    return traj_score * TRAJ_W + cog_score * COG_W + sog_score * SOG_W
+    if (isNaN(traj_score)) {
+      traj_score = 1
+      TRAJ_W = 0
+    }
+
+    if (isNaN(cog_score)) {
+      cog_score = 1
+      COG_W = 0
+    }
+
+    if (isNaN(sog_score)) {
+      sog_score = 1
+      SOG_W = 0
+    }
+
+    //console.log('traj_score: ' + traj_score)
+    //console.log('cog_score: ' + cog_score)
+    //console.log('sog_score: ' + sog_score)
+
+    let score = (traj_score * TRAJ_W + cog_score * COG_W + sog_score * SOG_W) / (TRAJ_W + COG_W + SOG_W)
+
+    //console.log(score)
+
+    score = isNaN(score) || !isFinite(score) ? 0 : score
+    return score
   }
   // The idea is to utilize curve fitting
   trajectory_analysis(message: Messages): number {
@@ -148,10 +171,12 @@ export function heading_scorer({ points }: LineString, messages: AisMessage[]): 
   const TOLERANCE = 15 //TODO: Completely arbitrary :D
   let nice_cog = zip(computed_bearings, messages)
     .map((x) => [x[0], x[1].cog])
-    .filter((x): x is [number, number] => x[1] !== undefined || x !== null)
+    .filter((x): x is [number, number] => x[1] !== undefined || x !== null || !Number.isNaN(x[1]))
     .map((x) => Math.abs(x[0] - x[1]))
     .map((x) => Math.max(x - TOLERANCE, 0))
     .map((x) => 1 - x / 360)
+
+  //console.log(nice_cog)
 
   return nice_cog
 }
