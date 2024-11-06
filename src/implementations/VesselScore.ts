@@ -55,13 +55,7 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
     this.orig_cog_score = cog_score
     this.orig_sog_score = sog_score
 
-    //console.log('traj_score: ' + traj_score)
-    //console.log('cog_score: ' + cog_score)
-    //console.log('sog_score: ' + sog_score)
-
     let score = (traj_score * TRAJ_W + cog_score * COG_W + sog_score * SOG_W) / (TRAJ_W + COG_W + SOG_W)
-
-    //console.log(score)
 
     score = isNaN(score) || !isFinite(score) ? 1 : score // We can't say much about a ship that does not provide data enough for analysis.
     return score
@@ -213,8 +207,6 @@ export function heading_scorer({ points }: LineString, messages: AisMessage[]): 
     .map((x) => Math.max(x - TOLERANCE, 0))
     .map((x) => 1 - x / 360)
 
-  //console.log(nice_cog)
-
   return nice_cog
 }
 
@@ -255,10 +247,8 @@ export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): num
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
     .map((x: [number, number]) => [x[0], x[1] * KNOT_TO_MS])
     .filter((x): x is [number, number] => Number.isFinite(x[0]) && Number.isFinite(x[1]))
-    // .filter((x): x is [number, number] => !x.includes(Infinity))
     .map((x) => Math.max(Math.abs(x[0] - x[1]) - x[1] * TOLERANCE_RATIO, 0))
     .map((x) => 1 / (1 + Math.pow(x, 2) / 10))
-  //.filter((x) => (x[0] - x[1]) / x[1] > TOLERANCE_RATIO) as [number, number][] //if error is too small, then discard
   return soggy
 }
 
