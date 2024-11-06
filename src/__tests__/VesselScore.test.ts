@@ -159,11 +159,11 @@ test('Curve fit 3D points', () => {
 //   console.log(res);
 // });
 
-test.only('point analysis', () => {
+test('point analysis', () => {
   let scorer = new VesselScore()
   let res = scorer.speed_analysis(new Messages(test_mes()))
 
-  console.log(res)
+  // console.log(res)
 
   expect(res).toBeGreaterThan(0)
   expect(res).toBeLessThanOrEqual(1)
@@ -240,4 +240,17 @@ test(`cog inspection`, () => {
   expect(res).not.toBeNaN
   expect(res).toBeGreaterThanOrEqual(0)
   expect(res).toBeLessThanOrEqual(1)
+})
+
+test(`scorer function`, () => {
+  let jobdata = test_mes()
+
+  new VesselScore().score(jobdata).then((res) => {
+    let score = res.trustworthiness
+    console.log(score)
+    expect(score).toBeDefined
+    expect(score).not.toBeNaN
+    expect(score).toBeGreaterThanOrEqual(0)
+    expect(score).toBeLessThanOrEqual(1)
+  })
 })
