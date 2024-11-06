@@ -4,6 +4,7 @@ import { Messages } from './Messages'
 import regression from 'regression'
 import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
+import { SQRT1_2 } from 'mathjs'
 
 export default class VesselScore implements IScorer, IVesselAnalysis {
   score(jobData: AISJobData): Promise<AISJobResult> {
@@ -50,8 +51,8 @@ export default class VesselScore implements IScorer, IVesselAnalysis {
   }
 
   speed_analysis(data: Messages): number {
-    const frac = score_calculator(sog_pairings(data).map((x) => Math.abs(x[0] - x[1])))
-    return frac
+    const scores = score_calculator(sog_pairings(data))
+    return scores
   }
 }
 
@@ -172,7 +173,7 @@ function sog_error(sogs: [number, number][]): number {
 }
 
 // pairs computed SOG's with reported SOG's
-export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): [number, number][] {
+export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): number[] {
   let shifted = structuredClone(vessel_trajectory.points)
   shifted.shift()
 
@@ -188,12 +189,14 @@ export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): [nu
   const KNOT_TO_MS = 1.852 / 3.6 //0.5144444444
   const TOLERANCE_RATIO = 0.1
   let sogs = ais_messages.map((x) => x.sog)
-  let soggy: [number, number][] = zip(computed_sogs, sogs)
+  let soggy: number[] = zip(computed_sogs, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
     .map((x: [number, number]) => [x[0], x[1] * KNOT_TO_MS])
     .filter((x) => !x.includes(NaN))
     .filter((x): x is [number, number] => !x.includes(Infinity))
-    .filter((x) => (x[0] - x[1]) / x[1] > TOLERANCE_RATIO) as [number, number][] //if error is too small, then discard
+    .map((x) => Math.max(Math.abs(x[0] - x[1]) - x[1] * TOLERANCE_RATIO, 0))
+    .map((x) => 1 / (1 + Math.pow(x, 2) / 10))
+  //.filter((x) => (x[0] - x[1]) / x[1] > TOLERANCE_RATIO) as [number, number][] //if error is too small, then discard
   return soggy
 }
 

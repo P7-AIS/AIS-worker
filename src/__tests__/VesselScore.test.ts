@@ -159,11 +159,14 @@ test('Curve fit 3D points', () => {
 //   console.log(res);
 // });
 
-test('point analysis', () => {
+test.only('point analysis', () => {
   let scorer = new VesselScore()
   let res = scorer.speed_analysis(test_mes())
 
+  console.log(res)
+
   expect(res).toBeGreaterThan(0)
+  expect(res).toBeLessThanOrEqual(1)
   expect(res).not.toEqual(Infinity)
   expect(res).not.toEqual(Infinity - 1)
   expect(res).not.toBeNaN
@@ -175,7 +178,7 @@ test('Test distance calculator', () => {
 
   let res = haversine_dist([point2.x, point2.y], [point3.x, point3.y])
 
-  expect(res).toBeCloseTo(65354.2, 2) // Yes there is only 65 km between Rom and Paris
+  console.log(res), expect(res).toBeCloseTo(65354.2, 2) // Yes there is only 65 km between Rom and Paris
 })
 
 test('Test single score for Linestring', () => {
