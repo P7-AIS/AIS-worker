@@ -185,6 +185,22 @@ describe('score/calculateVesselScore', () => {
       expect(reason).toBe('')
     })
   })
+  test('empty job', async () => {
+    const EMPTY_LINESTRING = Uint8Array.from(
+      '010200000000000000'.match(/.{1,2}/g)!.map((byte: any) => parseInt(byte, 16))
+    )
+    let empty: AISJobData = {
+      mmsi: 0,
+      aisMessages: [],
+      trajectory: {
+        mmsi: 0,
+        binPath: Buffer.from(EMPTY_LINESTRING),
+      },
+      algorithm: AISWorkerAlgorithm.SIMPLE,
+    }
+    const res = await new SimpleScorer().score(empty)
+    expect(res.trustworthiness).toEqual(1)
+  })
 })
 describe('trajectory analysis', () => {
   test('Test weighted score', () => {
