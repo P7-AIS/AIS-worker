@@ -18,9 +18,6 @@ export class Messages implements IMessageConverter, VesselMessage {
     if (!(geom instanceof LineString)) {
       throw new Error('input geometry not of type LineString')
     }
-    // if (!geom.hasM) {
-    //   throw new Error('Input trajectory has no M (Measure)')
-    // }
     this.vesselTrajectory = geom
   }
 

@@ -81,12 +81,6 @@ function testMes(): AISJobData {
   // sog: ~11.5
 
   let points = test_points()
-  // let ais_mess: AisMessage = {
-  //   id: 0,
-  //   mmsi: 219019887,
-  //   timestamp: new Date(points[0].m),
-  //   sog: 11.5,
-  // };
   let ais_mess: AisMessage[] = structuredClone(points).map((x, i) => {
     return { id: 0, mmsi: 219019887, timestamp: new Date(x.m), sog: 11.5, cog: 295 }
   })
