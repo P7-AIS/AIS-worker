@@ -47,17 +47,23 @@ function aisjobdata(path: string): AISJobData {
   return jobdata
 }
 
-// TODO: fix this test
-//test('Convert to message', () => {
-//  let aisMessage = aisjobdata('')
-//
-//  let message2: Point[] = message.vessel_trajectory.points
-//
-//  expect(message.mmsi).toBe(0)
-//  expect(message2[0].x).toBe(1)
-//  expect(message2[1].x).toBe(2)
-//})
+test('Convert to message', () => {
+  let aisMessage = aisjobdata('')
 
-test(`delete when creating tes`, () => {
-  expect(1 + 1).toBeGreaterThan(1)
+  let messages = new Messages(aisMessage)
+
+  expect(messages.mmsi).toBe(0)
+  expect(messages.vesselTrajectory.points[0].x).toBe(1)
+  expect(messages.vesselTrajectory.points[1].x).toBe(2)
+})
+
+test('Throw error when malformed data is provided', () => {
+  let aisMessage: AISJobData = {
+    mmsi: 0,
+    aisMessages: [],
+    trajectory: { mmsi: 0, binPath: Buffer.from('Not a buffer') },
+    algorithm: AISWorkerAlgorithm.SIMPLE,
+  }
+
+  expect(() => new Messages(aisMessage)).toThrow()
 })
