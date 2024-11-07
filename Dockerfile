@@ -1,5 +1,5 @@
 # Use an official Node.js runtime as a parent image
-FROM node:18
+FROM node:lts-alpine
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
@@ -17,4 +17,4 @@ COPY . .
 RUN npm run build
 
 # Set the command to run the transpiled JavaScript file
-CMD [ "node", "dist/index.js" ]
+CMD [ "node", "dist/src/index.js" ]
