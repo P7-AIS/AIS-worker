@@ -159,6 +159,23 @@ describe('test cases for helper functions', () => {
 
     // Find test cases
   })
+  test('illegal geometry (MultiLinestring)', async () => {
+    const EMPTY_MULTILINESTRING = Uint8Array.from(
+      '010500000000000000'.match(/.{1,2}/g)!.map((byte: any) => parseInt(byte, 16))
+    )
+
+    Buffer.from(EMPTY_MULTILINESTRING)
+    let empty: AISJobData = {
+      mmsi: 0,
+      aisMessages: [],
+      trajectory: {
+        mmsi: 0,
+        binPath: Buffer.from(EMPTY_MULTILINESTRING),
+      },
+      algorithm: AISWorkerAlgorithm.SIMPLE,
+    }
+    expect(() => new Messages(empty)).toThrow()
+  })
 })
 
 describe('score/calculateVesselScore', () => {
@@ -200,6 +217,19 @@ describe('score/calculateVesselScore', () => {
     }
     const res = await new SimpleScorer().score(empty)
     expect(res.trustworthiness).toEqual(1)
+  })
+
+  test('linestring length not matching ais message length', () => {
+    let mes = new Messages(testMes())
+    const lastMes = mes.ais_messages[mes.ais_messages.length - 1]
+    mes.ais_messages.push({
+      id: lastMes.id,
+      mmsi: lastMes.mmsi,
+      timestamp: new Date(lastMes.timestamp.getMilliseconds() + 2000),
+    })
+
+    const call = () => new SimpleScorer().calculateVesselScore(mes)
+    expect(call).not.toThrow()
   })
 })
 describe('trajectory analysis', () => {
