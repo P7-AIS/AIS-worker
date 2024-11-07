@@ -59,7 +59,7 @@ import { Messages } from '../implementations/Messages'
 //  );
 //});
 
-function test_points(): Point[] {
+function testPoints(): Point[] {
   let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
   let point2: Point = new Point(10.520233, 55.88015, undefined, 1725863040, 4326)
   let point3: Point = new Point(10.51415, 55.8823, undefined, 1725863116, 4326)
@@ -80,7 +80,13 @@ function testMes(): AISJobData {
   // end time:      1725863341.3673398
   // sog: ~11.5
 
-  let points = test_points()
+  let points = testPoints()
+  // let ais_mess: AisMessage = {
+  //   id: 0,
+  //   mmsi: 219019887,
+  //   timestamp: new Date(points[0].m),
+  //   sog: 11.5,
+  // };
   let ais_mess: AisMessage[] = structuredClone(points).map((x, i) => {
     return { id: 0, mmsi: 219019887, timestamp: new Date(x.m), sog: 11.5, cog: 295 }
   })
