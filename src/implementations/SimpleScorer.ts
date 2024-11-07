@@ -33,7 +33,7 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
 
     let trajScore = this.trajectoryAnalysis(structuredClone(messages))
     let cogScore = this.cogAnalysis(structuredClone(messages))
-    let sogScore = this.speedAnalysis(structuredClone(messages))
+    let sogScore = this.sogAnalysis(structuredClone(messages))
 
     if (Number.isNaN(trajScore)) {
       trajScore = 1
@@ -77,7 +77,7 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
     return scoreCalculator(headingScorer(data.vesselTrajectory, data.aisMessages))
   }
 
-  speedAnalysis(data: Messages): number {
+  sogAnalysis(data: Messages): number {
     const scores = scoreCalculator(sogPairings(data))
     return scores
   }

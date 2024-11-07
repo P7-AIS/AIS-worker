@@ -301,14 +301,14 @@ describe('SOG analysis', () => {
     })
     mes.aisMessages = modifiedAisMessages
 
-    const score = new SimpleScorer().speedAnalysis(mes)
+    const score = new SimpleScorer().sogAnalysis(mes)
 
     expect(score).toBeNaN()
   })
 
   test('SOG analysis', () => {
     let scorer = new SimpleScorer()
-    let res = scorer.speedAnalysis(new Messages(testMes()))
+    let res = scorer.sogAnalysis(new Messages(testMes()))
 
     expect(res).toBeGreaterThan(0)
     expect(res).toBeLessThanOrEqual(1)
