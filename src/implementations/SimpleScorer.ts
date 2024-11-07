@@ -35,17 +35,17 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
     let cog_score = this.cog_analysis(structuredClone(messages))
     let sog_score = this.speed_analysis(structuredClone(messages))
 
-    if (isNaN(traj_score)) {
+    if (Number.isNaN(traj_score)) {
       traj_score = 1
       TRAJ_W = 0
     }
 
-    if (isNaN(cog_score)) {
+    if (Number.isNaN(cog_score)) {
       cog_score = 1
       COG_W = 0
     }
 
-    if (isNaN(sog_score)) {
+    if (Number.isNaN(sog_score)) {
       sog_score = 1
       SOG_W = 0
     }
@@ -106,7 +106,7 @@ function trust_reason(traj_score: number, cog_score: number, sog_score: number):
     reason.push(SOG_REASON)
   }
 
-  return reason.join(' | ')
+  return reason.join(SEPARATOR)
 }
 
 function score_calculator(scores: number[]): number {
@@ -205,11 +205,6 @@ export function heading_scorer({ points }: LineString, messages: AisMessage[]): 
     .map((x) => Math.abs(x[0] - x[1]))
     .map((x) => Math.max(x - TOLERANCE, 0))
     .map((x) => 1 - x / 360)
-    .filter((x) => !Number.isNaN)
-
-  if (nice_cog.length === 0) {
-    nice_cog = [1] // i.e. we cannot score based on COG if a given vessel does not report COG, hence we trust it
-  }
   return nice_cog
 }
 
@@ -248,9 +243,6 @@ export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): num
     .map((x) => Math.max(Math.abs(x[0] - x[1]) - x[1] * TOLERANCE_RATIO, 0))
     .map((x) => 1 / (1 + Math.pow(x, 2) / 10))
 
-  if (soggy.length === 0) {
-    soggy = [1] // i.e. we cannot score based on SOG if a given vessel does not report SOG, hence we trust it
-  }
   return soggy
 }
 

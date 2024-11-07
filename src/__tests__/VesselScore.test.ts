@@ -109,91 +109,83 @@ function testMes(): AISJobData {
   return data
 }
 
-test('Curve fit 3D points', () => {
-  let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
-  let point2: Point = new Point(10.520233, 55.88015, undefined, 1725863040, 4326)
-  let point3: Point = new Point(10.51415, 55.8823, undefined, 1725863116, 4326)
-  let point4: Point = new Point(10.510617, 55.883583, undefined, 1725863161, 4326)
-  let point5: Point = new Point(10.5046, 55.885733, undefined, 1725863236, 4326)
-  let point6: Point = new Point(10.5037, 55.886017, undefined, 1725863246, 4326)
-  let point7: Point = new Point(10.502933, 55.886217, undefined, 1725863255, 4326)
-  let point8: Point = new Point(10.5002, 55.886817, undefined, 1725863286, 4326)
-  let point9: Point = new Point(10.495417, 55.887917, undefined, 1725863340, 4326)
-  let point10: Point = new Point(10.4955, 55.8879, undefined, 1725863340, 4326)
-  let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
+describe('test cases for helper functions', () => {
+  test('Test distance calculator', () => {
+    let point2: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
+    let point3: Point = new Point(9.2409831, 56.0996635, undefined, 1725863116, 4326) // Paris
 
-  let diff = point1.m
+    let res = haversine_dist([point2.x, point2.y], [point3.x, point3.y])
 
-  let points_x: [number, number][] = [point2, point3, point4, point5, point6, point7, point8, point9, point10].map(
-    (p: Point) => [p.m - diff, p.x]
-  )
+    expect(res).toBeCloseTo(65354.2, 2) // Yes there is only 65 km between Rom and Paris
+  })
 
-  let points_y: [number, number][] = [point2, point3, point4, point5, point6, point7, point8, point9, point10].map(
-    (p: Point) => [p.m - diff, p.y]
-  )
+  test('test angle between two ellipsoidal points', () => {
+    let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
+    let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
 
-  let res_x = solveQuadraticCoeeficients(points_x)
-  let res_y = solveQuadraticCoeeficients(points_y)
+    let res = bearing(point1.x, point1.y, point11.x, point11.y)
+    // console.log(res)
 
-  // Find test cases
-})
+    expect(res).not.toBeNaN
+    expect(res).not.toBe(Infinity || Infinity - 1)
+    expect(res).toBeGreaterThan(200) // west-ish
+    expect(res).toBeLessThan(300)
+  })
+  test('Curve fit 3D points', () => {
+    let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
+    let point2: Point = new Point(10.520233, 55.88015, undefined, 1725863040, 4326)
+    let point3: Point = new Point(10.51415, 55.8823, undefined, 1725863116, 4326)
+    let point4: Point = new Point(10.510617, 55.883583, undefined, 1725863161, 4326)
+    let point5: Point = new Point(10.5046, 55.885733, undefined, 1725863236, 4326)
+    let point6: Point = new Point(10.5037, 55.886017, undefined, 1725863246, 4326)
+    let point7: Point = new Point(10.502933, 55.886217, undefined, 1725863255, 4326)
+    let point8: Point = new Point(10.5002, 55.886817, undefined, 1725863286, 4326)
+    let point9: Point = new Point(10.495417, 55.887917, undefined, 1725863340, 4326)
+    let point10: Point = new Point(10.4955, 55.8879, undefined, 1725863340, 4326)
+    let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
 
-// test("Test distance", () => {
-//   let point2: Point = new Point(
-//     8.489810899999998,
-//     56.514157499999996,
-//     undefined,
-//     1725863040,
-//     4326
-//   );
-//   let point3: Point = new Point(
-//     9.2409831,
-//     56.0996635,
-//     undefined,
-//     1725863116,
-//     4326,
-//   );
+    let diff = point1.m
 
-//   let res = haversine_dist(point2, point3);
+    let points_x: [number, number][] = [point2, point3, point4, point5, point6, point7, point8, point9, point10].map(
+      (p: Point) => [p.m - diff, p.x]
+    )
 
-//   console.log(res);
-// });
+    let points_y: [number, number][] = [point2, point3, point4, point5, point6, point7, point8, point9, point10].map(
+      (p: Point) => [p.m - diff, p.y]
+    )
 
-test('Test distance calculator', () => {
-  let point2: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
-  let point3: Point = new Point(9.2409831, 56.0996635, undefined, 1725863116, 4326) // Paris
+    let res_x = solveQuadraticCoeeficients(points_x)
+    let res_y = solveQuadraticCoeeficients(points_y)
 
-  let res = haversine_dist([point2.x, point2.y], [point3.x, point3.y])
-
-  expect(res).toBeCloseTo(65354.2, 2) // Yes there is only 65 km between Rom and Paris
-})
-
-test('test angle between two ellipsoidal points', () => {
-  let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
-  let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
-
-  let res = bearing(point1.x, point1.y, point11.x, point11.y)
-  // console.log(res)
-
-  expect(res).not.toBeNaN
-  expect(res).not.toBe(Infinity || Infinity - 1)
-  expect(res).toBeGreaterThan(200) // west-ish
-  expect(res).toBeLessThan(300)
-})
-
-test('scorer function', () => {
-  let jobdata = testMes()
-
-  new SimpleScorer().score(jobdata).then((res) => {
-    let score = res.trustworthiness
-    // console.log(score)
-    expect(score).toBeDefined
-    expect(score).not.toBeNaN
-    expect(score).toBeGreaterThanOrEqual(0)
-    expect(score).toBeLessThanOrEqual(1)
+    // Find test cases
   })
 })
 
+describe('score/calculateVesselScore', () => {
+  test('scorer function', () => {
+    let jobdata = testMes()
+
+    new SimpleScorer().score(jobdata).then((res) => {
+      let score = res.trustworthiness
+      // console.log(score)
+      expect(score).toBeDefined
+      expect(score).not.toBeNaN
+      expect(score).toBeGreaterThanOrEqual(0)
+      expect(score).toBeLessThanOrEqual(1)
+    })
+  })
+
+  test('no reason', () => {
+    let jobdata = testMes()
+
+    new SimpleScorer().score(jobdata).then((res) => {
+      let reason = res.reason!
+      // console.log(score)
+      expect(reason).toBeDefined
+      expect(reason).toBe('')
+    })
+  })
+})
 describe('trajectory analysis', () => {
   test('Test weighted score', () => {
     let message = new Messages(testMes())
@@ -231,6 +223,25 @@ describe('trajectory analysis', () => {
 
     expect(res).toBe(1)
   })
+  test('trajectory analysis without COG and SOG', () => {
+    let mes = new Messages(testMes())
+
+    let modifiedAisMessages: AisMessage[] = mes.ais_messages.map((ais) => {
+      return {
+        id: ais.id,
+        mmsi: ais.mmsi,
+        timestamp: ais.timestamp,
+        sog: undefined,
+        cog: undefined,
+      }
+    })
+    mes.ais_messages = modifiedAisMessages
+
+    const fstScore = new SimpleScorer().calculateVesselScore(mes)
+    const sndScore = new SimpleScorer().trajectory_analysis(mes)
+
+    expect(fstScore).toEqual(sndScore)
+  })
 })
 
 describe('SOG analysis', () => {
@@ -249,7 +260,7 @@ describe('SOG analysis', () => {
 
     const score = new SimpleScorer().speed_analysis(mes)
 
-    expect(score).toEqual(1)
+    expect(score).toBeNaN()
   })
 
   test('SOG analysis', () => {
@@ -283,7 +294,7 @@ describe('COG analysis', () => {
 
     const score = new SimpleScorer().cog_analysis(mes)
 
-    expect(score).toEqual(1)
+    expect(score).toBeNaN()
   })
   test('cog inspection', () => {
     let mes = new Messages(testMes())
@@ -293,16 +304,5 @@ describe('COG analysis', () => {
     expect(res).not.toBeNaN
     expect(res).toBeGreaterThanOrEqual(0)
     expect(res).toBeLessThanOrEqual(1)
-  })
-})
-
-test('no reason', () => {
-  let jobdata = testMes()
-
-  new SimpleScorer().score(jobdata).then((res) => {
-    let reason = res.reason!
-    // console.log(score)
-    expect(reason).toBeDefined
-    expect(reason).toBe('')
   })
 })
