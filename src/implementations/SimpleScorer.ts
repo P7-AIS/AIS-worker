@@ -152,13 +152,13 @@ export function solveQuadraticCoeeficients(points: [number, number][]): number[]
   return result.equation
 }
 
-function vessel_position(coefficients: number[], timestamp: number): number {
+function vesselPosition(coefficients: number[], timestamp: number): number {
   return coefficients[0] * Math.pow(timestamp, 2) + coefficients[1] * timestamp + coefficients[2]
 }
 
-export function haversineDist(point_test: [number, number], point_real: [number, number]): number {
-  let point1: [number, number] = [(point_test[0] * Math.PI) / 180, (point_test[1] * Math.PI) / 180]
-  let point2: [number, number] = [(point_real[0] * Math.PI) / 180, (point_real[1] * Math.PI) / 180]
+export function haversineDist(pointTest: [number, number], pointReal: [number, number]): number {
+  let point1: [number, number] = [(pointTest[0] * Math.PI) / 180, (pointTest[1] * Math.PI) / 180]
+  let point2: [number, number] = [(pointReal[0] * Math.PI) / 180, (pointReal[1] * Math.PI) / 180]
 
   const R = 6371000 // Radius of earth in m.
   return (
@@ -196,10 +196,10 @@ export function headingScorer({ points }: LineString, messages: AisMessage[]): n
   let shifted = structuredClone(points)
   shifted.shift()
 
-  let computed_bearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
+  let computedBearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
 
   const TOLERANCE = 15 //TODO: Completely arbitrary :D
-  let niceCog = zip(computed_bearings, messages)
+  let niceCog = zip(computedBearings, messages)
     .map((x) => [x[0], x[1].cog])
     .filter((x): x is [number, number] => x[1] !== undefined || x !== null || !Number.isNaN(x[1]))
     .map((x) => Math.abs(x[0] - x[1]))
@@ -253,15 +253,15 @@ export function trajectorySingleScore(points: Point[]): number {
   let simplePointsX: [number, number][] = points.slice(0, -1).map((p: Point) => [p.m - diff, p.x])
   let simplePointsY: [number, number][] = points.slice(0, -1).map((p: Point) => [p.m - diff, p.y])
 
-  let control_point: Point = points.slice(-1)[0]
+  let controlPoint: Point = points.slice(-1)[0]
 
   let coeefX = solveQuadraticCoeeficients(simplePointsX)
   let coeefY = solveQuadraticCoeeficients(simplePointsY)
 
-  let xPos = vessel_position(coeefX, control_point.m - diff)
-  let yPos = vessel_position(coeefY, control_point.m - diff)
+  let xPos = vesselPosition(coeefX, controlPoint.m - diff)
+  let yPos = vesselPosition(coeefY, controlPoint.m - diff)
 
-  let distance = haversineDist([control_point.x, control_point.y], [xPos, yPos])
+  let distance = haversineDist([controlPoint.x, controlPoint.y], [xPos, yPos])
 
   const TOLERANCE = 10
   distance = Math.max(distance - TOLERANCE, 0)
