@@ -124,7 +124,6 @@ describe('test cases for helper functions', () => {
     let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
 
     let res = bearing(point1.x, point1.y, point11.x, point11.y)
-    // console.log(res)
 
     expect(res).not.toBeNaN
     expect(res).not.toBe(Infinity || Infinity - 1)
@@ -184,7 +183,6 @@ describe('score/calculateVesselScore', () => {
 
     new SimpleScorer().score(jobdata).then((res) => {
       let score = res.trustworthiness
-      // console.log(score)
       expect(score).toBeDefined
       expect(score).not.toBeNaN
       expect(score).toBeGreaterThanOrEqual(0)
@@ -197,7 +195,6 @@ describe('score/calculateVesselScore', () => {
 
     new SimpleScorer().score(jobdata).then((res) => {
       let reason = res.reason!
-      // console.log(score)
       expect(reason).toBeDefined
       expect(reason).toBe('')
     })
@@ -313,8 +310,6 @@ describe('SOG analysis', () => {
     let scorer = new SimpleScorer()
     let res = scorer.speed_analysis(new Messages(testMes()))
 
-    // console.log(res)
-
     expect(res).toBeGreaterThan(0)
     expect(res).toBeLessThanOrEqual(1)
     expect(res).not.toEqual(Infinity)
@@ -345,7 +340,6 @@ describe('COG analysis', () => {
   test('cog inspection', () => {
     let mes = new Messages(testMes())
     let res = new SimpleScorer().cog_analysis(mes)
-    //console.log(res)
     expect(res).toBeDefined
     expect(res).not.toBeNaN
     expect(res).toBeGreaterThanOrEqual(0)
