@@ -75,7 +75,7 @@ function test_points(): Point[] {
   return [point1, point2, point3, point4, point5, point6, point7, point8, point9, point10, point11]
 }
 
-function test_mes(): AISJobData {
+function testMes(): AISJobData {
   // start time:    1725863029.3645544
   // end time:      1725863341.3673398
   // sog: ~11.5
@@ -159,19 +159,6 @@ test('Curve fit 3D points', () => {
 //   console.log(res);
 // });
 
-test('point analysis', () => {
-  let scorer = new SimpleScorer()
-  let res = scorer.speed_analysis(new Messages(test_mes()))
-
-  // console.log(res)
-
-  expect(res).toBeGreaterThan(0)
-  expect(res).toBeLessThanOrEqual(1)
-  expect(res).not.toEqual(Infinity)
-  expect(res).not.toEqual(Infinity - 1)
-  expect(res).not.toBeNaN
-  expect(res).toBeDefined
-})
 test('Test distance calculator', () => {
   let point2: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
   let point3: Point = new Point(9.2409831, 56.0996635, undefined, 1725863116, 4326) // Paris
@@ -181,45 +168,7 @@ test('Test distance calculator', () => {
   expect(res).toBeCloseTo(65354.2, 2) // Yes there is only 65 km between Rom and Paris
 })
 
-test('Test single score for Linestring', () => {
-  let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
-  let point2: Point = new Point(10.520233, 55.88015, undefined, 1725863040, 4326)
-  let point3: Point = new Point(10.51415, 55.8823, undefined, 1725863116, 4326)
-  let point4: Point = new Point(10.510617, 55.883583, undefined, 1725863161, 4326)
-  let point5: Point = new Point(10.5046, 55.885733, undefined, 1725863236, 4326)
-  let point6: Point = new Point(10.5037, 55.886017, undefined, 1725863246, 4326)
-  let point7: Point = new Point(10.502933, 55.886217, undefined, 1725863255, 4326)
-  let point8: Point = new Point(10.5002, 55.886817, undefined, 1725863286, 4326)
-  let point9: Point = new Point(10.495417, 55.887917, undefined, 1725863340, 4326)
-  let point10: Point = new Point(10.4955, 55.8879, undefined, 1725863340, 4326)
-  let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
-
-  let points: Point[] = [point3, point4, point6, point7, point5]
-
-  let res = trajectory_single_score(points)
-
-  expect(res).toBe(1)
-})
-
-test('Test weighted score', () => {
-  let message = new Messages(test_mes())
-  let rom: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
-  let message1 = structuredClone(message)
-
-  message1.vessel_trajectory.points.splice(2, 0, rom)
-
-  let res_1 = new SimpleScorer().trajectory_analysis(message1)
-
-  let message2 = structuredClone(message)
-
-  message2.vessel_trajectory.points.splice(8, 0, rom)
-
-  let res_2 = new SimpleScorer().trajectory_analysis(message2)
-
-  expect(res_1).toBeLessThan(res_2)
-})
-
-test(`test angle between two ellipsoidal points`, () => {
+test('test angle between two ellipsoidal points', () => {
   let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
   let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
 
@@ -232,18 +181,8 @@ test(`test angle between two ellipsoidal points`, () => {
   expect(res).toBeLessThan(300)
 })
 
-test(`cog inspection`, () => {
-  let mes = new Messages(test_mes())
-  let res = new SimpleScorer().cog_analysis(mes)
-  //console.log(res)
-  expect(res).toBeDefined
-  expect(res).not.toBeNaN
-  expect(res).toBeGreaterThanOrEqual(0)
-  expect(res).toBeLessThanOrEqual(1)
-})
-
-test(`scorer function`, () => {
-  let jobdata = test_mes()
+test('scorer function', () => {
+  let jobdata = testMes()
 
   new SimpleScorer().score(jobdata).then((res) => {
     let score = res.trustworthiness
@@ -255,8 +194,110 @@ test(`scorer function`, () => {
   })
 })
 
-test(`no reason`, () => {
-  let jobdata = test_mes()
+describe('trajectory analysis', () => {
+  test('Test weighted score', () => {
+    let message = new Messages(testMes())
+    let rom: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
+    let message1 = structuredClone(message)
+
+    message1.vessel_trajectory.points.splice(2, 0, rom)
+
+    let res_1 = new SimpleScorer().trajectory_analysis(message1)
+
+    let message2 = structuredClone(message)
+
+    message2.vessel_trajectory.points.splice(8, 0, rom)
+
+    let res_2 = new SimpleScorer().trajectory_analysis(message2)
+
+    expect(res_1).toBeLessThan(res_2)
+  })
+  test('Test single score for Linestring', () => {
+    let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
+    let point2: Point = new Point(10.520233, 55.88015, undefined, 1725863040, 4326)
+    let point3: Point = new Point(10.51415, 55.8823, undefined, 1725863116, 4326)
+    let point4: Point = new Point(10.510617, 55.883583, undefined, 1725863161, 4326)
+    let point5: Point = new Point(10.5046, 55.885733, undefined, 1725863236, 4326)
+    let point6: Point = new Point(10.5037, 55.886017, undefined, 1725863246, 4326)
+    let point7: Point = new Point(10.502933, 55.886217, undefined, 1725863255, 4326)
+    let point8: Point = new Point(10.5002, 55.886817, undefined, 1725863286, 4326)
+    let point9: Point = new Point(10.495417, 55.887917, undefined, 1725863340, 4326)
+    let point10: Point = new Point(10.4955, 55.8879, undefined, 1725863340, 4326)
+    let point11: Point = new Point(10.469878675102462, 55.89283935425969, undefined, 1725863341.3673398, 4326)
+
+    let points: Point[] = [point3, point4, point6, point7, point5]
+
+    let res = trajectory_single_score(points)
+
+    expect(res).toBe(1)
+  })
+})
+
+describe('SOG analysis', () => {
+  test("empty SOG's", () => {
+    let mes = new Messages(testMes())
+
+    let modifiedAisMessages: AisMessage[] = mes.ais_messages.map((ais) => {
+      return {
+        id: ais.id,
+        mmsi: ais.mmsi,
+        timestamp: ais.timestamp,
+        sog: undefined,
+      }
+    })
+    mes.ais_messages = modifiedAisMessages
+
+    const score = new SimpleScorer().speed_analysis(mes)
+
+    expect(score).toEqual(1)
+  })
+
+  test('SOG analysis', () => {
+    let scorer = new SimpleScorer()
+    let res = scorer.speed_analysis(new Messages(testMes()))
+
+    // console.log(res)
+
+    expect(res).toBeGreaterThan(0)
+    expect(res).toBeLessThanOrEqual(1)
+    expect(res).not.toEqual(Infinity)
+    expect(res).not.toEqual(Infinity - 1)
+    expect(res).not.toBeNaN
+    expect(res).toBeDefined
+  })
+})
+
+describe('COG analysis', () => {
+  test("empty cog's", () => {
+    let mes = new Messages(testMes())
+
+    let modifiedAisMessages: AisMessage[] = mes.ais_messages.map((ais) => {
+      return {
+        id: ais.id,
+        mmsi: ais.mmsi,
+        timestamp: ais.timestamp,
+        cog: undefined,
+      }
+    })
+    mes.ais_messages = modifiedAisMessages
+
+    const score = new SimpleScorer().cog_analysis(mes)
+
+    expect(score).toEqual(1)
+  })
+  test('cog inspection', () => {
+    let mes = new Messages(testMes())
+    let res = new SimpleScorer().cog_analysis(mes)
+    //console.log(res)
+    expect(res).toBeDefined
+    expect(res).not.toBeNaN
+    expect(res).toBeGreaterThanOrEqual(0)
+    expect(res).toBeLessThanOrEqual(1)
+  })
+})
+
+test('no reason', () => {
+  let jobdata = testMes()
 
   new SimpleScorer().score(jobdata).then((res) => {
     let reason = res.reason!

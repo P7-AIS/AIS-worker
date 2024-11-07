@@ -1,9 +1,9 @@
-import { LineString, Point } from 'wkx'
-import { IVesselAnalysis, IVesselScore } from '../interfaces/IVesselMath'
-import { Messages } from './Messages'
 import regression from 'regression'
+import { LineString, Point } from 'wkx'
 import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
+import { IVesselAnalysis, IVesselScore } from '../interfaces/IVesselMath'
+import { Messages } from './Messages'
 
 export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnalysis {
   orig_traj_score: number | undefined
@@ -205,7 +205,11 @@ export function heading_scorer({ points }: LineString, messages: AisMessage[]): 
     .map((x) => Math.abs(x[0] - x[1]))
     .map((x) => Math.max(x - TOLERANCE, 0))
     .map((x) => 1 - x / 360)
+    .filter((x) => !Number.isNaN)
 
+  if (nice_cog.length === 0) {
+    nice_cog = [1] // i.e. we cannot score based on COG if a given vessel does not report COG, hence we trust it
+  }
   return nice_cog
 }
 
@@ -243,6 +247,10 @@ export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): num
     .filter((x): x is [number, number] => Number.isFinite(x[0]) && Number.isFinite(x[1]))
     .map((x) => Math.max(Math.abs(x[0] - x[1]) - x[1] * TOLERANCE_RATIO, 0))
     .map((x) => 1 / (1 + Math.pow(x, 2) / 10))
+
+  if (soggy.length === 0) {
+    soggy = [1] // i.e. we cannot score based on SOG if a given vessel does not report SOG, hence we trust it
+  }
   return soggy
 }
 
