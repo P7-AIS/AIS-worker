@@ -1,10 +1,10 @@
 import SimpleScorer, {
   bearing,
-  haversine_dist,
-  heading_scorer,
+  haversineDist,
+  headingScorer,
   normalize_points,
   solveQuadraticCoeeficients,
-  trajectory_single_score,
+  trajectorySingleScore,
 } from '../implementations/SimpleScorer'
 import { AISJobData, AisMessage, AISWorkerAlgorithm, Trajectory } from '../../AIS-models/models'
 import { LineString, Point } from 'wkx'
@@ -114,7 +114,7 @@ describe('test cases for helper functions', () => {
     let point2: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
     let point3: Point = new Point(9.2409831, 56.0996635, undefined, 1725863116, 4326) // Paris
 
-    let res = haversine_dist([point2.x, point2.y], [point3.x, point3.y])
+    let res = haversineDist([point2.x, point2.y], [point3.x, point3.y])
 
     expect(res).toBeCloseTo(65354.2, 2) // Yes there is only 65 km between Rom and Paris
   })
@@ -218,8 +218,8 @@ describe('score/calculateVesselScore', () => {
 
   test('linestring length not matching ais message length', () => {
     let mes = new Messages(testMes())
-    const lastMes = mes.ais_messages[mes.ais_messages.length - 1]
-    mes.ais_messages.push({
+    const lastMes = mes.aisMessages[mes.aisMessages.length - 1]
+    mes.aisMessages.push({
       id: lastMes.id,
       mmsi: lastMes.mmsi,
       timestamp: new Date(lastMes.timestamp.getMilliseconds() + 2000),
@@ -235,17 +235,17 @@ describe('trajectory analysis', () => {
     let rom: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
     let message1 = structuredClone(message)
 
-    message1.vessel_trajectory.points.splice(2, 0, rom)
+    message1.vesselTrajectory.points.splice(2, 0, rom)
 
-    let res_1 = new SimpleScorer().trajectory_analysis(message1)
+    let res1 = new SimpleScorer().trajectory_analysis(message1)
 
     let message2 = structuredClone(message)
 
-    message2.vessel_trajectory.points.splice(8, 0, rom)
+    message2.vesselTrajectory.points.splice(8, 0, rom)
 
-    let res_2 = new SimpleScorer().trajectory_analysis(message2)
+    let res2 = new SimpleScorer().trajectory_analysis(message2)
 
-    expect(res_1).toBeLessThan(res_2)
+    expect(res1).toBeLessThan(res2)
   })
   test('Test single score for Linestring', () => {
     let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
@@ -262,14 +262,14 @@ describe('trajectory analysis', () => {
 
     let points: Point[] = [point3, point4, point6, point7, point5]
 
-    let res = trajectory_single_score(points)
+    let res = trajectorySingleScore(points)
 
     expect(res).toBe(1)
   })
   test('trajectory analysis without COG and SOG', () => {
     let mes = new Messages(testMes())
 
-    let modifiedAisMessages: AisMessage[] = mes.ais_messages.map((ais) => {
+    let modifiedAisMessages: AisMessage[] = mes.aisMessages.map((ais) => {
       return {
         id: ais.id,
         mmsi: ais.mmsi,
@@ -278,7 +278,7 @@ describe('trajectory analysis', () => {
         cog: undefined,
       }
     })
-    mes.ais_messages = modifiedAisMessages
+    mes.aisMessages = modifiedAisMessages
 
     const fstScore = new SimpleScorer().calculateVesselScore(mes)
     const sndScore = new SimpleScorer().trajectory_analysis(mes)
@@ -291,7 +291,7 @@ describe('SOG analysis', () => {
   test("empty SOG's", () => {
     let mes = new Messages(testMes())
 
-    let modifiedAisMessages: AisMessage[] = mes.ais_messages.map((ais) => {
+    let modifiedAisMessages: AisMessage[] = mes.aisMessages.map((ais) => {
       return {
         id: ais.id,
         mmsi: ais.mmsi,
@@ -299,7 +299,7 @@ describe('SOG analysis', () => {
         sog: undefined,
       }
     })
-    mes.ais_messages = modifiedAisMessages
+    mes.aisMessages = modifiedAisMessages
 
     const score = new SimpleScorer().speed_analysis(mes)
 
@@ -323,7 +323,7 @@ describe('COG analysis', () => {
   test("empty cog's", () => {
     let mes = new Messages(testMes())
 
-    let modifiedAisMessages: AisMessage[] = mes.ais_messages.map((ais) => {
+    let modifiedAisMessages: AisMessage[] = mes.aisMessages.map((ais) => {
       return {
         id: ais.id,
         mmsi: ais.mmsi,
@@ -331,7 +331,7 @@ describe('COG analysis', () => {
         cog: undefined,
       }
     })
-    mes.ais_messages = modifiedAisMessages
+    mes.aisMessages = modifiedAisMessages
 
     const score = new SimpleScorer().cog_analysis(mes)
 

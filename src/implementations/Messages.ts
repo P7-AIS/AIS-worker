@@ -12,7 +12,7 @@ export class Messages implements IMessageConverter, VesselMessage {
    */
   constructor(data: AISJobData) {
     this.mmsi = data.mmsi
-    this.ais_messages = data.aisMessages
+    this.aisMessages = data.aisMessages
 
     let geom = Geometry.parse(Buffer.from(data.trajectory.binPath))
     if (!(geom instanceof LineString)) {
@@ -21,12 +21,12 @@ export class Messages implements IMessageConverter, VesselMessage {
     // if (!geom.hasM) {
     //   throw new Error('Input trajectory has no M (Measure)')
     // }
-    this.vessel_trajectory = geom
+    this.vesselTrajectory = geom
   }
 
   mmsi: number
-  ais_messages: AisMessage[]
-  vessel_trajectory: LineString
+  aisMessages: AisMessage[]
+  vesselTrajectory: LineString
 
   convert_to_job(): AISJobData {
     throw new Error('Method not implemented.')

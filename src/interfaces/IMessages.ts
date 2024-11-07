@@ -8,8 +8,8 @@ export interface IMessageConverter {
 
 export type VesselMessage = {
   mmsi: number
-  ais_messages: AisMessage[]
-  vessel_trajectory: Geometry
+  aisMessages: AisMessage[]
+  vesselTrajectory: Geometry
 }
 
 //export interface IVesselTrajectory {

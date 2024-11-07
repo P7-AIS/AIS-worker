@@ -7,16 +7,16 @@ const fromHexString = (hexString: any) =>
   Uint8Array.from(hexString.match(/.{1,2}/g).map((byte: any) => parseInt(byte, 16)))
 
 function aisjobdata(path: string): AISJobData {
-  let trajectory_buffer: Buffer
+  let trajectoryBuffer: Buffer
 
   if (path != '') {
-    let trajectory_string: string = fs.readFileSync(path, 'utf-8')
-    trajectory_buffer = Buffer.from(fromHexString(trajectory_string))
+    let trajectoryString: string = fs.readFileSync(path, 'utf-8')
+    trajectoryBuffer = Buffer.from(fromHexString(trajectoryString))
   } else {
     let point1 = new Point(1, 2, undefined, 1, 4326)
     let point2 = new Point(2, 2, undefined, 2, 4326)
-    let line_string = new LineString([point1, point2], 4326)
-    trajectory_buffer = line_string.toEwkb()
+    let lineString = new LineString([point1, point2], 4326)
+    trajectoryBuffer = lineString.toEwkb()
   }
 
   let messages: AisMessage[] = [
@@ -40,7 +40,7 @@ function aisjobdata(path: string): AISJobData {
   const jobdata: AISJobData = {
     mmsi: 0,
     aisMessages: messages,
-    trajectory: { mmsi: 0, binPath: trajectory_buffer },
+    trajectory: { mmsi: 0, binPath: trajectoryBuffer },
     algorithm: AISWorkerAlgorithm.SIMPLE,
   }
 
