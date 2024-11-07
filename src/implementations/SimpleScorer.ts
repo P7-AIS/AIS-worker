@@ -1,20 +1,20 @@
-import { LineString, Point } from 'wkx'
-import { IVesselAnalysis, IVesselScore } from '../interfaces/IVesselMath'
-import { Messages } from './Messages'
 import regression from 'regression'
+import { LineString, Point } from 'wkx'
 import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
+import { IVesselAnalysis, IVesselScore } from '../interfaces/IVesselMath'
+import { Messages } from './Messages'
 
 export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnalysis {
-  orig_traj_score: number | undefined
-  orig_cog_score: number | undefined
-  orig_sog_score: number | undefined
+  origTrajScore: number | undefined
+  origCogScore: number | undefined
+  origSogScore: number | undefined
 
   score(jobData: AISJobData): Promise<AISJobResult> {
     let mes = new Messages(jobData)
     const trustworthiness = this.calculateVesselScore(mes)
 
-    let reason = trust_reason(this.orig_traj_score!, this.orig_cog_score!, this.orig_sog_score!)
+    let reason = trustReason(this.origTrajScore!, this.origCogScore!, this.origSogScore!)
 
     let res: AISJobResult = {
       mmsi: jobData.mmsi,
@@ -31,85 +31,84 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
     let COG_W = 0.25
     let SOG_W = 0.25
 
-    let traj_score = this.trajectory_analysis(structuredClone(messages))
-    let cog_score = this.cog_analysis(structuredClone(messages))
-    let sog_score = this.speed_analysis(structuredClone(messages))
+    let trajScore = this.trajectoryAnalysis(structuredClone(messages))
+    let cogScore = this.cogAnalysis(structuredClone(messages))
+    let sogScore = this.sogAnalysis(structuredClone(messages))
 
-    if (isNaN(traj_score)) {
-      traj_score = 1
+    if (Number.isNaN(trajScore)) {
+      trajScore = 1
       TRAJ_W = 0
     }
 
-    if (isNaN(cog_score)) {
-      cog_score = 1
+    if (Number.isNaN(cogScore)) {
+      cogScore = 1
       COG_W = 0
     }
 
-    if (isNaN(sog_score)) {
-      sog_score = 1
+    if (Number.isNaN(sogScore)) {
+      sogScore = 1
       SOG_W = 0
     }
-    this.orig_traj_score = traj_score
-    this.orig_cog_score = cog_score
-    this.orig_sog_score = sog_score
+    this.origTrajScore = trajScore
+    this.origCogScore = cogScore
+    this.origSogScore = sogScore
 
-    let score = (traj_score * TRAJ_W + cog_score * COG_W + sog_score * SOG_W) / (TRAJ_W + COG_W + SOG_W)
+    let score = (trajScore * TRAJ_W + cogScore * COG_W + sogScore * SOG_W) / (TRAJ_W + COG_W + SOG_W)
 
     score = isNaN(score) || !isFinite(score) ? 1 : score // We can't say much about a ship that does not provide data enough for analysis.
     return score
   }
 
   // The idea is to utilize curve fitting
-  trajectory_analysis(message: Messages): number {
-    let points = message.vessel_trajectory.points
+  trajectoryAnalysis(message: Messages): number {
+    let points = message.vesselTrajectory.points
 
-    let points_len = points.length - 2
+    let pointsLen = points.length - 2
 
     let scores: number[] = []
 
-    for (let i = 2; i < points_len; i++) {
-      scores.push(trajectory_single_score([points[i - 2], points[i - 1], points[i + 1], points[i + 2], points[i]]))
+    for (let i = 2; i < pointsLen; i++) {
+      scores.push(trajectorySingleScore([points[i - 2], points[i - 1], points[i + 1], points[i + 2], points[i]]))
     }
 
-    return score_calculator(scores)
+    return scoreCalculator(scores)
   }
-  cog_analysis(data: Messages): number {
-    return score_calculator(heading_scorer(data.vessel_trajectory, data.ais_messages))
+  cogAnalysis(data: Messages): number {
+    return scoreCalculator(headingScorer(data.vesselTrajectory, data.aisMessages))
   }
 
-  speed_analysis(data: Messages): number {
-    const scores = score_calculator(sog_pairings(data))
+  sogAnalysis(data: Messages): number {
+    const scores = scoreCalculator(sogPairings(data))
     return scores
   }
 }
 
-function trust_reason(traj_score: number, cog_score: number, sog_score: number): string {
+function trustReason(trajScore: number, cogScore: number, sogScore: number): string {
   let reason: string[] = []
-  //TODO: completely arbitrary
-  const TRAJ_THRES = 0.5
-  const COG_THRES = 0.5
-  const SOG_THRES = 0.5
+  const TRAJ_THRES = 0.5 //TODO: completely arbitrary
+  const COG_THRES = 0.5 //TODO: completely arbitrary
+  const SOG_THRES = 0.5 //TODO: completely arbitrary
   const TRAJ_REASON = 'bad trajectory'
   const COG_REASON = 'bad COG'
   const SOG_REASON = 'bad SOG'
   const SEPARATOR = ' | '
 
-  if (traj_score < TRAJ_THRES) {
+  if (trajScore < TRAJ_THRES) {
     reason.push(TRAJ_REASON)
   }
 
-  if (cog_score < COG_THRES) {
+  if (cogScore < COG_THRES) {
     reason.push(COG_REASON)
   }
 
-  if (sog_score < SOG_THRES) {
+  if (sogScore < SOG_THRES) {
     reason.push(SOG_REASON)
   }
 
-  return reason.join(' | ')
+  return reason.join(SEPARATOR)
 }
 
-function score_calculator(scores: number[]): number {
+function scoreCalculator(scores: number[]): number {
   const DECAY_FACTOR = 0.99
 
   let numerator = scores.map((s, i) => s * Math.pow(DECAY_FACTOR, i + 1)).reduce((acc, val) => acc + val, 0)
@@ -119,22 +118,22 @@ function score_calculator(scores: number[]): number {
   return numerator / denominator
 }
 
-export function normalize_points(heading: number, points: Point[]): Point[] {
+export function normalizePoints(heading: number, points: Point[]): Point[] {
   // Normalize first from first point.
-  let first_point = points[0]
-  let head_rad = ((heading - 90) * Math.PI) / 180
+  let firstPoint = points[0]
+  let headRad = ((heading - 90) * Math.PI) / 180
 
   // Move the first point to center and others respectively.
   points = points.map(
-    (p: Point) => new Point(p.x - first_point.x, p.y - first_point.y, undefined, p.m - first_point.m, p.srid)
+    (p: Point) => new Point(p.x - firstPoint.x, p.y - firstPoint.y, undefined, p.m - firstPoint.m, p.srid)
   )
 
   // Now rotate the points such that they are centered by the heading of the ship.
   points = points.map(
     (p: Point) =>
       new Point(
-        p.x * Math.cos(head_rad) - p.y * Math.sin(head_rad),
-        p.x * Math.sin(head_rad) + p.y * Math.cos(head_rad),
+        p.x * Math.cos(headRad) - p.y * Math.sin(headRad),
+        p.x * Math.sin(headRad) + p.y * Math.cos(headRad),
         undefined,
         p.m,
         p.srid
@@ -152,13 +151,13 @@ export function solveQuadraticCoeeficients(points: [number, number][]): number[]
   return result.equation
 }
 
-function vessel_position(coefficients: number[], timestamp: number): number {
+function vesselPosition(coefficients: number[], timestamp: number): number {
   return coefficients[0] * Math.pow(timestamp, 2) + coefficients[1] * timestamp + coefficients[2]
 }
 
-export function haversine_dist(point_test: [number, number], point_real: [number, number]): number {
-  let point_1: [number, number] = [(point_test[0] * Math.PI) / 180, (point_test[1] * Math.PI) / 180]
-  let point_2: [number, number] = [(point_real[0] * Math.PI) / 180, (point_real[1] * Math.PI) / 180]
+export function haversineDist(pointTest: [number, number], pointReal: [number, number]): number {
+  let point1: [number, number] = [(pointTest[0] * Math.PI) / 180, (pointTest[1] * Math.PI) / 180]
+  let point2: [number, number] = [(pointReal[0] * Math.PI) / 180, (pointReal[1] * Math.PI) / 180]
 
   const R = 6371000 // Radius of earth in m.
   return (
@@ -166,8 +165,8 @@ export function haversine_dist(point_test: [number, number], point_real: [number
     R *
     Math.asin(
       Math.sqrt(
-        Math.pow(Math.sin((point_1[1] - point_2[1]) / 2), 2) +
-          Math.cos(point_1[1]) * Math.cos(point_2[1]) * Math.pow(Math.sin((point_1[0] - point_2[0]) / 2), 2)
+        Math.pow(Math.sin((point1[1] - point2[1]) / 2), 2) +
+          Math.cos(point1[1]) * Math.cos(point2[1]) * Math.pow(Math.sin((point1[0] - point2[0]) / 2), 2)
       )
     )
   )
@@ -178,35 +177,34 @@ export function haversine_dist(point_test: [number, number], point_real: [number
  */
 export function bearing(lon1: number, lat1: number, lon2: number, lat2: number): number {
   // map lon/lat's to radians
-  const r_lon1 = lon1 * (Math.PI / 180)
-  const r_lat1 = lat1 * (Math.PI / 180)
-  const r_lon2 = lon2 * (Math.PI / 180)
-  const r_lat2 = lat2 * (Math.PI / 180)
-  const delta_lon = r_lon2 - r_lon1
+  const rLon1 = lon1 * (Math.PI / 180)
+  const rLat1 = lat1 * (Math.PI / 180)
+  const rLon2 = lon2 * (Math.PI / 180)
+  const rLat2 = lat2 * (Math.PI / 180)
+  const deltaLon = rLon2 - rLon1
 
-  const y = Math.sin(delta_lon) * Math.cos(r_lat2)
-  const x = Math.cos(r_lat1) * Math.sin(r_lat2) - Math.sin(r_lat1) * Math.cos(r_lat2) * Math.cos(delta_lon)
+  const y = Math.sin(deltaLon) * Math.cos(rLat2)
+  const x = Math.cos(rLat1) * Math.sin(rLat2) - Math.sin(rLat1) * Math.cos(rLat2) * Math.cos(deltaLon)
 
   const theta = Math.atan2(y, x)
 
   return ((theta * 180) / Math.PI + 360) % 360
 }
 
-export function heading_scorer({ points }: LineString, messages: AisMessage[]): number[] {
+export function headingScorer({ points }: LineString, messages: AisMessage[]): number[] {
   let shifted = structuredClone(points)
   shifted.shift()
 
-  let computed_bearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
+  let computedBearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
 
   const TOLERANCE = 15 //TODO: Completely arbitrary :D
-  let nice_cog = zip(computed_bearings, messages)
+  let niceCog = zip(computedBearings, messages)
     .map((x) => [x[0], x[1].cog])
     .filter((x): x is [number, number] => x[1] !== undefined || x !== null || !Number.isNaN(x[1]))
     .map((x) => Math.abs(x[0] - x[1]))
     .map((x) => Math.max(x - TOLERANCE, 0))
     .map((x) => 1 - x / 360)
-
-  return nice_cog
+  return niceCog
 }
 
 //? why is this not a standard library function?
@@ -221,47 +219,48 @@ function zip<a, b>(left: a[], right: b[]): [a, b][] {
 }
 
 // pairs computed SOG's with reported SOG's
-export function sog_pairings({ vessel_trajectory, ais_messages }: Messages): number[] {
-  let shifted = structuredClone(vessel_trajectory.points)
+export function sogPairings({ vesselTrajectory: vesselTrajectory, aisMessages: aisMessages }: Messages): number[] {
+  let shifted = structuredClone(vesselTrajectory.points)
   shifted.shift()
 
-  let computed_sogs = zip(vessel_trajectory.points, shifted) // create a list of pairs [point__n,point__n+1]
+  let computedSogs = zip(vesselTrajectory.points, shifted) // create a list of pairs [point__n,point__n+1]
     .map((pair) => {
       return {
-        dist: haversine_dist([pair[0].x, pair[0].y], [pair[1].x, pair[1].y]),
-        delta_time: pair[1].m - pair[0].m,
+        dist: haversineDist([pair[0].x, pair[0].y], [pair[1].x, pair[1].y]),
+        deltaTime: pair[1].m - pair[0].m,
       }
     })
-    .map((x) => x.dist / x.delta_time)
+    .map((x) => x.dist / x.deltaTime)
 
   const KNOT_TO_MS = 0.5144444444 // 1.852/3.6
   const TOLERANCE_RATIO = 0.1
-  let sogs = ais_messages.map((x) => x.sog)
-  let soggy: number[] = zip(computed_sogs, sogs)
+  let sogs = aisMessages.map((x) => x.sog)
+  let soggy: number[] = zip(computedSogs, sogs)
     .filter((x): x is [number, number] => x[1] !== undefined) //? wth is this???
     .map((x: [number, number]) => [x[0], x[1] * KNOT_TO_MS])
     .filter((x): x is [number, number] => Number.isFinite(x[0]) && Number.isFinite(x[1]))
     .map((x) => Math.max(Math.abs(x[0] - x[1]) - x[1] * TOLERANCE_RATIO, 0))
     .map((x) => 1 / (1 + Math.pow(x, 2) / 10))
+
   return soggy
 }
 
 // The input should be the amount of linestrings to analyse.
-export function trajectory_single_score(points: Point[]): number {
+export function trajectorySingleScore(points: Point[]): number {
   let diff: number = points[0].m
 
-  let simple_points_x: [number, number][] = points.slice(0, -1).map((p: Point) => [p.m - diff, p.x])
-  let simple_points_y: [number, number][] = points.slice(0, -1).map((p: Point) => [p.m - diff, p.y])
+  let simplePointsX: [number, number][] = points.slice(0, -1).map((p: Point) => [p.m - diff, p.x])
+  let simplePointsY: [number, number][] = points.slice(0, -1).map((p: Point) => [p.m - diff, p.y])
 
-  let control_point: Point = points.slice(-1)[0]
+  let controlPoint: Point = points.slice(-1)[0]
 
-  let coeef_x = solveQuadraticCoeeficients(simple_points_x)
-  let coeef_y = solveQuadraticCoeeficients(simple_points_y)
+  let coeefX = solveQuadraticCoeeficients(simplePointsX)
+  let coeefY = solveQuadraticCoeeficients(simplePointsY)
 
-  let x_pos = vessel_position(coeef_x, control_point.m - diff)
-  let y_pos = vessel_position(coeef_y, control_point.m - diff)
+  let xPos = vesselPosition(coeefX, controlPoint.m - diff)
+  let yPos = vesselPosition(coeefY, controlPoint.m - diff)
 
-  let distance = haversine_dist([control_point.x, control_point.y], [x_pos, y_pos])
+  let distance = haversineDist([controlPoint.x, controlPoint.y], [xPos, yPos])
 
   const TOLERANCE = 10
   distance = Math.max(distance - TOLERANCE, 0)

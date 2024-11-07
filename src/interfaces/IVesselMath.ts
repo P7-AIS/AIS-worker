@@ -5,7 +5,7 @@ export interface IVesselScore {
 }
 
 export interface IVesselAnalysis {
-  trajectory_analysis(data: Messages): number
-  cog_analysis(data: Messages): number
-  speed_analysis(data: Messages): number
+  trajectoryAnalysis(data: Messages): number
+  cogAnalysis(data: Messages): number
+  sogAnalysis(data: Messages): number
 }
