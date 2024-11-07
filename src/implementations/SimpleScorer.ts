@@ -85,10 +85,9 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
 
 function trustReason(trajScore: number, cogScore: number, sogScore: number): string {
   let reason: string[] = []
-  //TODO: completely arbitrary
-  const TRAJ_THRES = 0.5
-  const COG_THRES = 0.5
-  const SOG_THRES = 0.5
+  const TRAJ_THRES = 0.5 //TODO: completely arbitrary
+  const COG_THRES = 0.5 //TODO: completely arbitrary
+  const SOG_THRES = 0.5 //TODO: completely arbitrary
   const TRAJ_REASON = 'bad trajectory'
   const COG_REASON = 'bad COG'
   const SOG_REASON = 'bad SOG'
