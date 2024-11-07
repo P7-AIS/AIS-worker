@@ -2,8 +2,8 @@ import { Geometry, LineString } from 'wkx'
 import { AISJobData, AisMessage } from '../../AIS-models/models'
 
 export interface IMessageConverter {
-  convert_buffer(path: Buffer): LineString
-  convert_to_job(): AISJobData
+  convertBuffer(path: Buffer): LineString
+  convertToJob(): AISJobData
 }
 
 export type VesselMessage = {
@@ -11,7 +11,3 @@ export type VesselMessage = {
   aisMessages: AisMessage[]
   vesselTrajectory: Geometry
 }
-
-//export interface IVesselTrajectory {
-//
-//}

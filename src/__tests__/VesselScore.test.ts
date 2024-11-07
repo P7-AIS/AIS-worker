@@ -1,63 +1,12 @@
 import SimpleScorer, {
   bearing,
   haversineDist,
-  headingScorer,
-  normalizePoints,
   solveQuadraticCoeeficients,
   trajectorySingleScore,
 } from '../implementations/SimpleScorer'
 import { AISJobData, AisMessage, AISWorkerAlgorithm, Trajectory } from '../../AIS-models/models'
 import { LineString, Point } from 'wkx'
 import { Messages } from '../implementations/Messages'
-
-//test("Normalize points", () => {
-//  let point1 = new Point(1, 2, undefined, 1, 4326);
-//  let point2 = new Point(1.5, 2.4, undefined, 1, 4326);
-//  let point3 = new Point(2, 2.6, undefined, 1, 4326);
-//
-//  let points: Point[] = [point1, point2, point3];
-//
-//  let heading: number = 50.88;
-//
-//  let normalized_points = normalize_points(heading, points);
-//
-//  expect(normalized_points[0].x).toBeCloseTo(0);
-//  expect(normalized_points[0].y).toBeCloseTo(0);
-//  expect(normalized_points[1].x).toBeCloseTo(0.64);
-//  expect(normalized_points[1].y).toBeCloseTo(-0.0054);
-//  expect(normalized_points[2].x).toBeCloseTo(1.15);
-//  expect(normalized_points[2].y).toBeCloseTo(-0.165);
-//});
-
-//test("Curve fit points", () => {
-//  // These are pre normalized.
-//  let point1: Point = new Point(0, 0, undefined, 1, 4326);
-//  let point2: Point = new Point(1, 0.1, undefined, 1, 4326);
-//  let point3: Point = new Point(2, 0.5, undefined, 1, 4326);
-//
-//  let points: Point[] = [point1, point2, point3];
-//
-//  let result = solveQuadraticCoeeficients(points);
-//
-//  expect(result[0]).toBeCloseTo(0.15);
-//  expect(result[1]).toBeCloseTo(-0.05);
-//  expect(result[2]).toBeCloseTo(0);
-//});
-
-//test("Curve fitting 3D points with 2 points", () => {
-//  let point1: Point = new Point(0, 0, undefined, 1, 4326);
-//  let point2: Point = new Point(1, 0.1, undefined, 2, 4326);
-//  // let point3: Point = new Point(2, 0.5, undefined, 1, 4326);
-//  let points: [number, number, number][] = [point1, point2].map((p: Point) => [
-//    p.x,
-//    p.y,
-//    p.m,
-//  ]);
-//
-//  expect(() => curveFit3D(points)).toThrow(
-//    "At least 3 points are required for fitting a second-degree polynomial.",
-//  );
-//});
 
 function testPoints(): Point[] {
   let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
@@ -79,15 +28,9 @@ function testMes(): AISJobData {
   // start time:    1725863029.3645544
   // end time:      1725863341.3673398
   // sog: ~11.5
-
   let points = testPoints()
-  // let ais_mess: AisMessage = {
-  //   id: 0,
-  //   mmsi: 219019887,
-  //   timestamp: new Date(points[0].m),
-  //   sog: 11.5,
-  // };
-  let ais_mess: AisMessage[] = structuredClone(points).map((x, i) => {
+
+  let aisMess: AisMessage[] = structuredClone(points).map((x, i) => {
     return { id: 0, mmsi: 219019887, timestamp: new Date(x.m), sog: 11.5, cog: 295 }
   })
 
@@ -101,7 +44,7 @@ function testMes(): AISJobData {
 
   let data: AISJobData = {
     mmsi: 219019887,
-    aisMessages: ais_mess,
+    aisMessages: aisMess,
     algorithm: AISWorkerAlgorithm.SIMPLE,
     trajectory: traj,
   }
@@ -145,16 +88,16 @@ describe('test cases for helper functions', () => {
 
     let diff = point1.m
 
-    let points_x: [number, number][] = [point2, point3, point4, point5, point6, point7, point8, point9, point10].map(
+    let pointsX: [number, number][] = [point2, point3, point4, point5, point6, point7, point8, point9, point10].map(
       (p: Point) => [p.m - diff, p.x]
     )
 
-    let points_y: [number, number][] = [point2, point3, point4, point5, point6, point7, point8, point9, point10].map(
+    let pointsY: [number, number][] = [point2, point3, point4, point5, point6, point7, point8, point9, point10].map(
       (p: Point) => [p.m - diff, p.y]
     )
 
-    let resX = solveQuadraticCoeeficients(points_x)
-    let resY = solveQuadraticCoeeficients(points_y)
+    let resX = solveQuadraticCoeeficients(pointsX)
+    let resY = solveQuadraticCoeeficients(pointsY)
 
     // Find test cases
   })

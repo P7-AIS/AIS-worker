@@ -47,8 +47,9 @@ function aisjobdata(path: string): AISJobData {
   return jobdata
 }
 
+// TODO: fix this test
 //test('Convert to message', () => {
-//  let ais_message = aisjobdata('')
+//  let aisMessage = aisjobdata('')
 //
 //  let message2: Point[] = message.vessel_trajectory.points
 //
