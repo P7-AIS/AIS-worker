@@ -2,7 +2,7 @@ import SimpleScorer, {
   bearing,
   haversineDist,
   headingScorer,
-  normalize_points,
+  normalizePoints,
   solveQuadraticCoeeficients,
   trajectorySingleScore,
 } from '../implementations/SimpleScorer'
@@ -153,8 +153,8 @@ describe('test cases for helper functions', () => {
       (p: Point) => [p.m - diff, p.y]
     )
 
-    let res_x = solveQuadraticCoeeficients(points_x)
-    let res_y = solveQuadraticCoeeficients(points_y)
+    let resX = solveQuadraticCoeeficients(points_x)
+    let resY = solveQuadraticCoeeficients(points_y)
 
     // Find test cases
   })
@@ -237,13 +237,13 @@ describe('trajectory analysis', () => {
 
     message1.vesselTrajectory.points.splice(2, 0, rom)
 
-    let res1 = new SimpleScorer().trajectory_analysis(message1)
+    let res1 = new SimpleScorer().trajectoryAnalysis(message1)
 
     let message2 = structuredClone(message)
 
     message2.vesselTrajectory.points.splice(8, 0, rom)
 
-    let res2 = new SimpleScorer().trajectory_analysis(message2)
+    let res2 = new SimpleScorer().trajectoryAnalysis(message2)
 
     expect(res1).toBeLessThan(res2)
   })
@@ -281,7 +281,7 @@ describe('trajectory analysis', () => {
     mes.aisMessages = modifiedAisMessages
 
     const fstScore = new SimpleScorer().calculateVesselScore(mes)
-    const sndScore = new SimpleScorer().trajectory_analysis(mes)
+    const sndScore = new SimpleScorer().trajectoryAnalysis(mes)
 
     expect(fstScore).toEqual(sndScore)
   })
@@ -301,14 +301,14 @@ describe('SOG analysis', () => {
     })
     mes.aisMessages = modifiedAisMessages
 
-    const score = new SimpleScorer().speed_analysis(mes)
+    const score = new SimpleScorer().speedAnalysis(mes)
 
     expect(score).toBeNaN()
   })
 
   test('SOG analysis', () => {
     let scorer = new SimpleScorer()
-    let res = scorer.speed_analysis(new Messages(testMes()))
+    let res = scorer.speedAnalysis(new Messages(testMes()))
 
     expect(res).toBeGreaterThan(0)
     expect(res).toBeLessThanOrEqual(1)
@@ -333,13 +333,13 @@ describe('COG analysis', () => {
     })
     mes.aisMessages = modifiedAisMessages
 
-    const score = new SimpleScorer().cog_analysis(mes)
+    const score = new SimpleScorer().cogAnalysis(mes)
 
     expect(score).toBeNaN()
   })
   test('cog inspection', () => {
     let mes = new Messages(testMes())
-    let res = new SimpleScorer().cog_analysis(mes)
+    let res = new SimpleScorer().cogAnalysis(mes)
     expect(res).toBeDefined
     expect(res).not.toBeNaN
     expect(res).toBeGreaterThanOrEqual(0)

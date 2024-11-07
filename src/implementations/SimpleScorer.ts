@@ -14,7 +14,7 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
     let mes = new Messages(jobData)
     const trustworthiness = this.calculateVesselScore(mes)
 
-    let reason = trust_reason(this.origTrajScore!, this.origCogScore!, this.origSogScore!)
+    let reason = trustReason(this.origTrajScore!, this.origCogScore!, this.origSogScore!)
 
     let res: AISJobResult = {
       mmsi: jobData.mmsi,
@@ -31,9 +31,9 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
     let COG_W = 0.25
     let SOG_W = 0.25
 
-    let trajScore = this.trajectory_analysis(structuredClone(messages))
-    let cogScore = this.cog_analysis(structuredClone(messages))
-    let sogScore = this.speed_analysis(structuredClone(messages))
+    let trajScore = this.trajectoryAnalysis(structuredClone(messages))
+    let cogScore = this.cogAnalysis(structuredClone(messages))
+    let sogScore = this.speedAnalysis(structuredClone(messages))
 
     if (Number.isNaN(trajScore)) {
       trajScore = 1
@@ -60,7 +60,7 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
   }
 
   // The idea is to utilize curve fitting
-  trajectory_analysis(message: Messages): number {
+  trajectoryAnalysis(message: Messages): number {
     let points = message.vesselTrajectory.points
 
     let pointsLen = points.length - 2
@@ -73,17 +73,17 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
 
     return scoreCalculator(scores)
   }
-  cog_analysis(data: Messages): number {
+  cogAnalysis(data: Messages): number {
     return scoreCalculator(headingScorer(data.vesselTrajectory, data.aisMessages))
   }
 
-  speed_analysis(data: Messages): number {
+  speedAnalysis(data: Messages): number {
     const scores = scoreCalculator(sogPairings(data))
     return scores
   }
 }
 
-function trust_reason(trajScore: number, cogScore: number, sogScore: number): string {
+function trustReason(trajScore: number, cogScore: number, sogScore: number): string {
   let reason: string[] = []
   //TODO: completely arbitrary
   const TRAJ_THRES = 0.5
@@ -119,7 +119,7 @@ function scoreCalculator(scores: number[]): number {
   return numerator / denominator
 }
 
-export function normalize_points(heading: number, points: Point[]): Point[] {
+export function normalizePoints(heading: number, points: Point[]): Point[] {
   // Normalize first from first point.
   let firstPoint = points[0]
   let headRad = ((heading - 90) * Math.PI) / 180
