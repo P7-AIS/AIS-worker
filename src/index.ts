@@ -2,8 +2,8 @@ import { Queue } from 'bullmq'
 import dotenv from 'dotenv'
 import AISWorker from './implementations/AISWorker'
 import RandomScorer from './implementations/RandomScorer'
-import SimpleScorer from './implementations/SimpleScorer'
 import HashScorer from './implementations/HashScorer'
+import SimpleScorer from './implementations/SimpleScorer'
 
 dotenv.config()
 
