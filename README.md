@@ -12,5 +12,5 @@
 
 ## Running Tests
 
-`npm test`
-`npm test --cov`
+`npm run test`
+`npm run test:cov` to show coverage
