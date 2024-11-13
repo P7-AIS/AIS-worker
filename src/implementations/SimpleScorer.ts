@@ -4,17 +4,19 @@ import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../
 import IScorer from '../interfaces/IScorer'
 import { IVesselAnalysis, IVesselScore } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
+import { DELAY_TIME_1 } from 'bullmq'
 
 export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnalysis {
   origTrajScore: number | undefined
   origCogScore: number | undefined
   origSogScore: number | undefined
+  origReportScore: number | undefined
 
   score(jobData: AISJobData): Promise<AISJobResult> {
     let mes = new Messages(jobData)
     const trustworthiness = this.calculateVesselScore(mes)
 
-    let reason = trustReason(this.origTrajScore!, this.origCogScore!, this.origSogScore!)
+    let reason = trustReason(this.origTrajScore!, this.origCogScore!, this.origSogScore!, this.origReportScore!)
 
     let res: AISJobResult = {
       mmsi: jobData.mmsi,
@@ -27,13 +29,15 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
   }
 
   calculateVesselScore(messages: Messages): number {
-    let TRAJ_W = 0.5
+    let TRAJ_W = 0.25
     let COG_W = 0.25
     let SOG_W = 0.25
+    let REPORT_W = 0.25
 
     let trajScore = this.trajectoryAnalysis(structuredClone(messages))
     let cogScore = this.cogAnalysis(structuredClone(messages))
     let sogScore = this.sogAnalysis(structuredClone(messages))
+    let reportScore = this.reportAnalysis(structuredClone(messages))
 
     if (Number.isNaN(trajScore)) {
       trajScore = 1
@@ -49,11 +53,18 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
       sogScore = 1
       SOG_W = 0
     }
+    if (Number.isNaN(reportScore)) {
+      reportScore = 1
+      REPORT_W = 0
+    }
     this.origTrajScore = trajScore
     this.origCogScore = cogScore
     this.origSogScore = sogScore
+    this.origReportScore = reportScore
 
-    let score = (trajScore * TRAJ_W + cogScore * COG_W + sogScore * SOG_W) / (TRAJ_W + COG_W + SOG_W)
+    let score =
+      (trajScore * TRAJ_W + cogScore * COG_W + sogScore * SOG_W + reportScore * REPORT_W) /
+      (TRAJ_W + COG_W + SOG_W + REPORT_W)
 
     score = isNaN(score) || !isFinite(score) ? 1 : score // We can't say much about a ship that does not provide data enough for analysis.
     return score
@@ -81,16 +92,47 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
     const scores = scoreCalculator(sogPairings(data))
     return scores
   }
+
+  // If vessels cuts their radio, then this will detect the missing frequency of messages.
+  reportAnalysis(data: Messages): number {
+    const CHUNK_SIZE = 600 // 10 minutes
+    let points = data.vesselTrajectory.points
+
+    if (points.length === 0) {
+      return NaN
+    }
+
+    let startTime = points[0].m
+
+    let indexes = points.map((x) => ~~((x.m - startTime) / CHUNK_SIZE))
+    let lastIndex = indexes.slice(-1)[0]
+
+    let result = Array(lastIndex + 1)
+      .fill(0)
+      .map((_, i) => indexes.filter((v) => v === i).length)
+      .map((v, _, arr) =>
+        reportSingleChunkScore(
+          v,
+          structuredClone(arr)
+            .sort((a, b) => a - b)
+            .slice(~~(arr.length / 2))[0]
+        )
+      )
+
+    return scoreCalculator(result)
+  }
 }
 
-function trustReason(trajScore: number, cogScore: number, sogScore: number): string {
+function trustReason(trajScore: number, cogScore: number, sogScore: number, repScore: number): string {
   let reason: string[] = []
   const TRAJ_THRES = 0.5 //TODO: completely arbitrary
   const COG_THRES = 0.5 //TODO: completely arbitrary
   const SOG_THRES = 0.5 //TODO: completely arbitrary
+  const REP_THRES = 0.5 //TODO: completely arbitrary
   const TRAJ_REASON = 'bad trajectory'
   const COG_REASON = 'bad COG'
   const SOG_REASON = 'bad SOG'
+  const REP_REASON = 'low message frequency'
   const SEPARATOR = ' | '
 
   if (trajScore < TRAJ_THRES) {
@@ -103,6 +145,10 @@ function trustReason(trajScore: number, cogScore: number, sogScore: number): str
 
   if (sogScore < SOG_THRES) {
     reason.push(SOG_REASON)
+  }
+
+  if (repScore < REP_THRES) {
+    reason.push(REP_REASON)
   }
 
   return reason.join(SEPARATOR)
@@ -266,4 +312,12 @@ export function trajectorySingleScore(points: Point[]): number {
   distance = Math.max(distance - TOLERANCE, 0)
 
   return 1 / (1 + Math.pow(distance, 2) / 1000)
+}
+
+function reportSingleChunkScore(point: number, max: number): number {
+  //const TOLERANCE = ~~(max / 20) // 5% of max
+
+  let reports = Math.min(point, max)
+
+  return Math.min(reports / max, 1)
 }
