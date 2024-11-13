@@ -8,4 +8,5 @@ export interface IVesselAnalysis {
   trajectoryAnalysis(data: Messages): number
   cogAnalysis(data: Messages): number
   sogAnalysis(data: Messages): number
+  reportAnalysis(data: Messages): number
 }

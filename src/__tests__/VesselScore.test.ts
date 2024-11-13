@@ -173,7 +173,7 @@ describe('score/calculateVesselScore', () => {
   })
 })
 describe('trajectory analysis', () => {
-  test('Test weighted score', () => {
+  test('Should weigh newer scores higher', () => {
     let message = new Messages(testMes())
     let rom: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
     let message1 = structuredClone(message)
@@ -188,7 +188,7 @@ describe('trajectory analysis', () => {
 
     let res2 = new SimpleScorer().trajectoryAnalysis(message2)
 
-    expect(res1).toBeLessThan(res2)
+    expect(res1).toBeGreaterThan(res2)
   })
   test('Test single score for Linestring', () => {
     let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
@@ -225,8 +225,9 @@ describe('trajectory analysis', () => {
 
     const fstScore = new SimpleScorer().calculateVesselScore(mes)
     const sndScore = new SimpleScorer().trajectoryAnalysis(mes)
+    const thirdScore = new SimpleScorer().reportAnalysis(mes)
 
-    expect(fstScore).toEqual(sndScore)
+    expect(fstScore).toEqual(sndScore * 0.5 + thirdScore * 0.5)
   })
 })
 
@@ -287,5 +288,59 @@ describe('COG analysis', () => {
     expect(res).not.toBeNaN
     expect(res).toBeGreaterThanOrEqual(0)
     expect(res).toBeLessThanOrEqual(1)
+  })
+})
+
+describe('Message analysis', () => {
+  test('Normal amount of messages', () => {
+    let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1, 4326)
+    let point2: Point = new Point(10.520233, 55.88015, undefined, 601, 4326)
+    let point3: Point = new Point(10.51415, 55.8823, undefined, 1201, 4326)
+    let point4: Point = new Point(10.510617, 55.883583, undefined, 1801, 4326)
+
+    let points: Point[] = [point1, point2, point3, point4]
+
+    let line = new LineString(points, 4326)
+
+    let buffer = line.toEwkb()
+
+    let jobdata: AISJobData = {
+      mmsi: 0,
+      aisMessages: [],
+      algorithm: AISWorkerAlgorithm.SIMPLE,
+      trajectory: { binPath: buffer, mmsi: 0 },
+    }
+
+    let mes = new Messages(jobdata)
+
+    let res = new SimpleScorer().reportAnalysis(mes)
+
+    expect(res).toBe(1)
+  })
+
+  test('Radio cut', () => {
+    let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1, 4326)
+    let point2: Point = new Point(10.520233, 55.88015, undefined, 301, 4326)
+    let point3: Point = new Point(10.51415, 55.8823, undefined, 1201, 4326)
+    let point4: Point = new Point(10.510617, 55.883583, undefined, 1501, 4326)
+
+    let points: Point[] = [point1, point2, point3, point4]
+
+    let line = new LineString(points, 4326)
+
+    let buffer = line.toEwkb()
+
+    let jobdata: AISJobData = {
+      mmsi: 0,
+      aisMessages: [],
+      algorithm: AISWorkerAlgorithm.SIMPLE,
+      trajectory: { binPath: buffer, mmsi: 0 },
+    }
+
+    let mes = new Messages(jobdata)
+
+    let res = new SimpleScorer().reportAnalysis(mes)
+
+    expect(res).toBeCloseTo(0.66667789)
   })
 })
