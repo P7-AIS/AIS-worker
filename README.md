@@ -6,10 +6,11 @@
 - Copy `.env.example` to `.env` and fill out appropiate values
 - `git submodule update --init --recursive`
 
-## Running Tests
-
-`npm test`
-
 ## Development
 
 - `npm run dev`
+
+## Running Tests
+
+`npm run test`
+`npm run test:cov` to show coverage
