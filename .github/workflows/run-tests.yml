@@ -20,16 +20,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-
       - name: Get submodules
         run: git submodule update --init --recursive
-
-      - name: Build protos
-        run: |
-          mkdir proto
-          npm run build:protos:mac
 
       - name: Run Jest tests
         run: npm run test
