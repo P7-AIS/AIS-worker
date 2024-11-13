@@ -9,7 +9,8 @@
     "build": "tsc",
     "docker:build": "docker compose build",
     "docker:run": "docker compose up -d",
-    "test": "jest"
+    "test": "jest",
+    "test:cov": "jest --coverage"
   },
   "keywords": [],
   "author": "",
