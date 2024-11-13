@@ -4,7 +4,6 @@ import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../
 import IScorer from '../interfaces/IScorer'
 import { IVesselAnalysis, IVesselScore } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
-import { DELAY_TIME_1 } from 'bullmq'
 
 export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnalysis {
   origTrajScore: number | undefined
@@ -156,6 +155,8 @@ function trustReason(trajScore: number, cogScore: number, sogScore: number, repS
 
 function scoreCalculator(scores: number[]): number {
   const DECAY_FACTOR = 0.99
+
+  scores = scores.reverse()
 
   let numerator = scores.map((s, i) => s * Math.pow(DECAY_FACTOR, i + 1)).reduce((acc, val) => acc + val, 0)
 
@@ -314,10 +315,10 @@ export function trajectorySingleScore(points: Point[]): number {
   return 1 / (1 + Math.pow(distance, 2) / 1000)
 }
 
-function reportSingleChunkScore(point: number, max: number): number {
-  //const TOLERANCE = ~~(max / 20) // 5% of max
+function reportSingleChunkScore(point: number, median: number): number {
+  //const TOLERANCE = ~~(median / 20) // 5% of median
 
-  let reports = Math.min(point, max)
+  let reports = Math.min(point, median)
 
-  return Math.min(reports / max, 1)
+  return Math.min(reports / median, 1)
 }

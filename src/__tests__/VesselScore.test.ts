@@ -173,7 +173,7 @@ describe('score/calculateVesselScore', () => {
   })
 })
 describe('trajectory analysis', () => {
-  test('Test weighted score', () => {
+  test('Should weigh newer scores higher', () => {
     let message = new Messages(testMes())
     let rom: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
     let message1 = structuredClone(message)
@@ -188,7 +188,7 @@ describe('trajectory analysis', () => {
 
     let res2 = new SimpleScorer().trajectoryAnalysis(message2)
 
-    expect(res1).toBeLessThan(res2)
+    expect(res1).toBeGreaterThan(res2)
   })
   test('Test single score for Linestring', () => {
     let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
