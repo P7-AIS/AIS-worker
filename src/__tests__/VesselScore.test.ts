@@ -173,7 +173,7 @@ describe('score/calculateVesselScore', () => {
   })
 })
 describe('trajectory analysis', () => {
-  test('Test weighted score', () => {
+  test('Should weigh newer scores higher', () => {
     let message = new Messages(testMes())
     let rom: Point = new Point(8.489810899999998, 56.514157499999996, undefined, 1725863040, 4326) // Rom
     let message1 = structuredClone(message)
