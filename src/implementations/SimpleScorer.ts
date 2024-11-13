@@ -4,7 +4,6 @@ import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../
 import IScorer from '../interfaces/IScorer'
 import { IVesselAnalysis, IVesselScore } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
-import { DELAY_TIME_1 } from 'bullmq'
 
 export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnalysis {
   origTrajScore: number | undefined
