@@ -106,17 +106,14 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
     let indexes = points.map((x) => ~~((x.m - startTime) / CHUNK_SIZE))
     let lastIndex = indexes.slice(-1)[0]
 
-    let result = Array(lastIndex + 1)
+    let temp = Array(lastIndex + 1)
       .fill(0)
       .map((_, i) => indexes.filter((v) => v === i).length)
-      .map((v, _, arr) =>
-        reportSingleChunkScore(
-          v,
-          structuredClone(arr)
-            .sort((a, b) => a - b)
-            .slice(~~(arr.length / 2))[0]
-        )
-      )
+    let median = structuredClone(temp)
+      .sort((a, b) => a - b)
+      .slice(~~(temp.length / 2))[0]
+
+    let result = temp.map((v) => reportSingleChunkScore(v, median))
 
     return scoreCalculator(result)
   }
@@ -154,7 +151,7 @@ function trustReason(trajScore: number, cogScore: number, sogScore: number, repS
 }
 
 function scoreCalculator(scores: number[]): number {
-  const DECAY_FACTOR = 0.99
+  const DECAY_FACTOR = 0.9999
 
   scores = scores.reverse()
 
