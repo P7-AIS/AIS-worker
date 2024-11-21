@@ -2,12 +2,14 @@ import { Job, Queue, Worker } from 'bullmq'
 import IWorker from '../interfaces/IWorker'
 import { AISJobData, AISJobResult, AISWorkerAlgorithm } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
+import DatabaseHandler from './DatabaseHandler'
 
 export default class AISWorker implements IWorker {
   private readonly worker: Worker
 
   constructor(
     private readonly jobQueue: Queue<AISJobData, AISJobResult>,
+    private readonly databaseHandler: DatabaseHandler,
     private readonly connection: { host: string; port: number },
     private readonly randomScorer: IScorer,
     private readonly simpleScorer: IScorer,
@@ -54,13 +56,25 @@ export default class AISWorker implements IWorker {
   private async computeJob(job: Job<AISJobData, AISJobResult>): Promise<AISJobResult> {
     console.log(`Processing job ${job.id}`)
 
+    const { mmsi, timestamp, algorithm } = job.data
+
+    const messages = await this.databaseHandler.getAisMessages(mmsi, timestamp, 1)
+    const trajectory = await this.databaseHandler.getTrajectory(mmsi, timestamp, 1)
+
+    const data = {
+      mmsi,
+      messages,
+      trajectory,
+      algorithm,
+    }
+
     switch (job.data.algorithm) {
       case AISWorkerAlgorithm.RANDOM:
-        return this.randomScorer.score(job.data)
+        return this.randomScorer.score(data)
       case AISWorkerAlgorithm.SIMPLE:
-        return this.simpleScorer.score(job.data)
+        return this.simpleScorer.score(data)
       case AISWorkerAlgorithm.HASHED:
-        return this.hashScorer.score(job.data)
+        return this.hashScorer.score(data)
       default:
         throw new Error('Invalid algorithm')
     }
