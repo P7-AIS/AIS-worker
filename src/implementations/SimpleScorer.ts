@@ -106,17 +106,14 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
     let indexes = points.map((x) => ~~((x.m - startTime) / CHUNK_SIZE))
     let lastIndex = indexes.slice(-1)[0]
 
-    let result = Array(lastIndex + 1)
+    let temp = Array(lastIndex + 1)
       .fill(0)
       .map((_, i) => indexes.filter((v) => v === i).length)
-      .map((v, _, arr) =>
-        reportSingleChunkScore(
-          v,
-          structuredClone(arr)
-            .sort((a, b) => a - b)
-            .slice(~~(arr.length / 2))[0]
-        )
-      )
+    let median = structuredClone(temp)
+      .sort((a, b) => a - b)
+      .slice(~~(temp.length / 2))[0]
+
+    let result = temp.map((v) => reportSingleChunkScore(v, median))
 
     return scoreCalculator(result)
   }
@@ -154,7 +151,7 @@ function trustReason(trajScore: number, cogScore: number, sogScore: number, repS
 }
 
 function scoreCalculator(scores: number[]): number {
-  const DECAY_FACTOR = 0.99
+  const DECAY_FACTOR = 0.9999
 
   scores = scores.reverse()
 
@@ -244,13 +241,20 @@ export function headingScorer({ points }: LineString, messages: AisMessage[]): n
 
   let computedBearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
 
+  function cogDiff(cogC: number, cogR: number): number {
+    let diff = Math.abs(cogC - cogR)
+    if (diff > 180) {
+      diff = 360 - diff
+    }
+    return diff
+  }
   const TOLERANCE = 15 //TODO: Completely arbitrary :D
   let niceCog = zip(computedBearings, messages)
     .map((x) => [x[0], x[1].cog])
     .filter((x): x is [number, number] => x[1] !== undefined || x !== null || !Number.isNaN(x[1]))
-    .map((x) => Math.abs(x[0] - x[1]))
+    .map((x) => cogDiff(x[0], x[1]))
     .map((x) => Math.max(x - TOLERANCE, 0))
-    .map((x) => 1 - x / 360)
+    .map((x) => 1 - x / 180)
   return niceCog
 }
 
