@@ -241,13 +241,20 @@ export function headingScorer({ points }: LineString, messages: AisMessage[]): n
 
   let computedBearings = zip(points, shifted).map((pair) => bearing(pair[0].x, pair[0].y, pair[1].x, pair[1].y))
 
+  function cogDiff(cogC: number, cogR: number): number {
+    let diff = Math.abs(cogC - cogR)
+    if (diff > 180) {
+      diff = 360 - diff
+    }
+    return diff
+  }
   const TOLERANCE = 15 //TODO: Completely arbitrary :D
   let niceCog = zip(computedBearings, messages)
     .map((x) => [x[0], x[1].cog])
     .filter((x): x is [number, number] => x[1] !== undefined || x !== null || !Number.isNaN(x[1]))
-    .map((x) => Math.abs(x[0] - x[1]))
+    .map((x) => cogDiff(x[0], x[1]))
     .map((x) => Math.max(x - TOLERANCE, 0))
-    .map((x) => 1 - x / 360)
+    .map((x) => 1 - x / 180)
   return niceCog
 }
 
