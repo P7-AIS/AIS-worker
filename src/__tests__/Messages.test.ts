@@ -2,11 +2,12 @@ import * as fs from 'fs'
 import { Messages } from '../implementations/Messages'
 import { AISJobData, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
 import { Geometry, LineString, Point } from 'wkx'
+import { AisData } from '../interfaces/IScorer'
 
 const fromHexString = (hexString: any) =>
   Uint8Array.from(hexString.match(/.{1,2}/g).map((byte: any) => parseInt(byte, 16)))
 
-function aisjobdata(path: string): AISJobData {
+function getAisData(path: string): AisData {
   let trajectoryBuffer: Buffer
 
   if (path != '') {
@@ -37,18 +38,18 @@ function aisjobdata(path: string): AISJobData {
     },
   ]
 
-  const jobdata: AISJobData = {
+  const aisData: AisData = {
     mmsi: 0,
-    aisMessages: messages,
+    messages,
     trajectory: { mmsi: 0, binPath: trajectoryBuffer },
     algorithm: AISWorkerAlgorithm.SIMPLE,
   }
 
-  return jobdata
+  return aisData
 }
 
 test('Convert to message', () => {
-  let aisMessage = aisjobdata('')
+  let aisMessage = getAisData('')
 
   let messages = new Messages(aisMessage)
 
@@ -58,12 +59,12 @@ test('Convert to message', () => {
 })
 
 test('Throw error when malformed data is provided', () => {
-  let aisMessage: AISJobData = {
+  const aisData: AisData = {
     mmsi: 0,
-    aisMessages: [],
+    messages: [],
     trajectory: { mmsi: 0, binPath: Buffer.from('Not a buffer') },
     algorithm: AISWorkerAlgorithm.SIMPLE,
   }
 
-  expect(() => new Messages(aisMessage)).toThrow()
+  expect(() => new Messages(aisData)).toThrow()
 })
