@@ -1,16 +1,16 @@
 import { AISJobData, AISJobResult } from '../../AIS-models/models'
-import IScorer from '../interfaces/IScorer'
+import IScorer, { AisData } from '../interfaces/IScorer'
 
 export default class HashScorer implements IScorer {
-  score(jobData: AISJobData): Promise<AISJobResult> {
+  score(aisData: AisData): Promise<AISJobResult> {
     return new Promise<AISJobResult>((resolve) => {
-      const rng = this.getRng(jobData.mmsi)
+      const rng = this.getRng(aisData.mmsi)
 
       resolve({
-        mmsi: jobData.mmsi,
+        mmsi: aisData.mmsi,
         trustworthiness: rng(),
         reason: 'Hashed',
-        algorithm: jobData.algorithm,
+        algorithm: aisData.algorithm,
       })
     })
   }

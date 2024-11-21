@@ -1,5 +1,12 @@
-import { AISJobData, AISJobResult } from '../../AIS-models/models'
+import { AISJobResult, AisMessage, AISWorkerAlgorithm, Trajectory } from '../../AIS-models/models'
+
+export interface AisData {
+  mmsi: number
+  messages: AisMessage[]
+  trajectory: Trajectory
+  algorithm: AISWorkerAlgorithm
+}
 
 export default interface IScorer {
-  score(jobData: AISJobData): Promise<AISJobResult>
+  score(aisData: AisData): Promise<AISJobResult>
 }

@@ -1,14 +1,15 @@
 import { Geometry, LineString, MultiLineString } from 'wkx'
 import { IMessageConverter, VesselMessage } from '../interfaces/IMessages'
 import { AISJobData, AisMessage } from '../../AIS-models/models'
+import { AisData } from '../interfaces/IScorer'
 
 export class Messages implements IMessageConverter, VesselMessage {
   /**
    * Note: this throws if input trajectory is not of type `LineString`
    */
-  constructor(data: AISJobData) {
+  constructor(data: AisData) {
     this.mmsi = data.mmsi
-    this.aisMessages = data.aisMessages
+    this.aisMessages = data.messages
 
     let geom = Geometry.parse(Buffer.from(data.trajectory.binPath))
     if (!(geom instanceof LineString)) {

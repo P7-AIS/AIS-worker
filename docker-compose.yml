@@ -4,8 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ais-worker:latest
-    ports:
-      - '3000:3000'
+    image: ghcr.io/p7-ais/ais-worker:main
+    env_file:
+      - ./.env
     environment:
       - NODE_ENV=production

@@ -7,6 +7,7 @@ import SimpleScorer, {
 import { AISJobData, AisMessage, AISWorkerAlgorithm, Trajectory } from '../../AIS-models/models'
 import { LineString, Point } from 'wkx'
 import { Messages } from '../implementations/Messages'
+import { AisData } from '../interfaces/IScorer'
 
 function testPoints(): Point[] {
   let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
@@ -24,7 +25,7 @@ function testPoints(): Point[] {
   return [point1, point2, point3, point4, point5, point6, point7, point8, point9, point10, point11]
 }
 
-function testMes(): AISJobData {
+function testMes(): AisData {
   // start time:    1725863029.3645544
   // end time:      1725863341.3673398
   // sog: ~11.5
@@ -42,9 +43,9 @@ function testMes(): AISJobData {
     binPath: buffer,
   }
 
-  let data: AISJobData = {
+  let data: AisData = {
     mmsi: 219019887,
-    aisMessages: aisMess,
+    messages: aisMess,
     algorithm: AISWorkerAlgorithm.SIMPLE,
     trajectory: traj,
   }
@@ -107,9 +108,9 @@ describe('test cases for helper functions', () => {
     )
 
     Buffer.from(EMPTY_MULTILINESTRING)
-    let empty: AISJobData = {
+    let empty: AisData = {
       mmsi: 0,
-      aisMessages: [],
+      messages: [],
       trajectory: {
         mmsi: 0,
         binPath: Buffer.from(EMPTY_MULTILINESTRING),
@@ -146,9 +147,9 @@ describe('score/calculateVesselScore', () => {
     const EMPTY_LINESTRING = Uint8Array.from(
       '010200000000000000'.match(/.{1,2}/g)!.map((byte: any) => parseInt(byte, 16))
     )
-    let empty: AISJobData = {
+    let empty: AisData = {
       mmsi: 0,
-      aisMessages: [],
+      messages: [],
       trajectory: {
         mmsi: 0,
         binPath: Buffer.from(EMPTY_LINESTRING),
@@ -304,9 +305,9 @@ describe('Message analysis', () => {
 
     let buffer = line.toEwkb()
 
-    let jobdata: AISJobData = {
+    let jobdata: AisData = {
       mmsi: 0,
-      aisMessages: [],
+      messages: [],
       algorithm: AISWorkerAlgorithm.SIMPLE,
       trajectory: { binPath: buffer, mmsi: 0 },
     }
@@ -330,9 +331,9 @@ describe('Message analysis', () => {
 
     let buffer = line.toEwkb()
 
-    let jobdata: AISJobData = {
+    let jobdata: AisData = {
       mmsi: 0,
-      aisMessages: [],
+      messages: [],
       algorithm: AISWorkerAlgorithm.SIMPLE,
       trajectory: { binPath: buffer, mmsi: 0 },
     }
