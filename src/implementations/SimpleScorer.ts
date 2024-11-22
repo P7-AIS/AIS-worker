@@ -1,7 +1,7 @@
 import regression from 'regression'
 import { LineString, Point } from 'wkx'
-import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
-import IScorer, { AisData } from '../interfaces/IScorer'
+import { AISJobData, AISJobResult, AisMessage, AISWorkerAlgorithm, JobAisData } from '../../AIS-models/models'
+import IScorer from '../interfaces/IScorer'
 import { IVesselAnalysis, IVesselScore } from '../interfaces/IVesselMath'
 import { Messages } from './Messages'
 
@@ -11,7 +11,7 @@ export default class SimpleScorer implements IScorer, IVesselScore, IVesselAnaly
   origSogScore: number | undefined
   origReportScore: number | undefined
 
-  score(aisData: AisData): Promise<AISJobResult> {
+  score(aisData: JobAisData): Promise<AISJobResult> {
     let mes = new Messages(aisData)
     const trustworthiness = this.calculateVesselScore(mes)
 

@@ -1,8 +1,8 @@
-import { AISJobData, AISJobResult } from '../../AIS-models/models'
-import IScorer, { AisData } from '../interfaces/IScorer'
+import { AISJobResult, JobAisData } from '../../AIS-models/models'
+import IScorer from '../interfaces/IScorer'
 
 export default class HashScorer implements IScorer {
-  score(aisData: AisData): Promise<AISJobResult> {
+  score(aisData: JobAisData): Promise<AISJobResult> {
     return new Promise<AISJobResult>((resolve) => {
       const rng = this.getRng(aisData.mmsi)
 
