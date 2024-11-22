@@ -3,7 +3,7 @@ import IWorker from '../interfaces/IWorker'
 import { AISJobData, AISJobResult, AISWorkerAlgorithm, JobAisData } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
 import PostgresDatabaseHandler from './PostgresDatabaseHandler'
-import jobAisData from '../../test_files/JobAisData.json'
+import jobAisData from './jobAisData.json'
 
 export default class AISWorker implements IWorker {
   private readonly worker: Worker
