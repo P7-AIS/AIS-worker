@@ -1,13 +1,12 @@
 import * as fs from 'fs'
 import { Messages } from '../implementations/Messages'
-import { AISJobData, AisMessage, AISWorkerAlgorithm } from '../../AIS-models/models'
+import { AISJobData, AisMessage, AISWorkerAlgorithm, JobAisData } from '../../AIS-models/models'
 import { Geometry, LineString, Point } from 'wkx'
-import { AisData } from '../interfaces/IScorer'
 
 const fromHexString = (hexString: any) =>
   Uint8Array.from(hexString.match(/.{1,2}/g).map((byte: any) => parseInt(byte, 16)))
 
-function getAisData(path: string): AisData {
+function getAisData(path: string): JobAisData {
   let trajectoryBuffer: Buffer
 
   if (path != '') {
@@ -38,7 +37,7 @@ function getAisData(path: string): AisData {
     },
   ]
 
-  const aisData: AisData = {
+  const aisData: JobAisData = {
     mmsi: 0,
     messages,
     trajectory: { mmsi: 0, binPath: trajectoryBuffer },
@@ -59,7 +58,7 @@ test('Convert to message', () => {
 })
 
 test('Throw error when malformed data is provided', () => {
-  const aisData: AisData = {
+  const aisData: JobAisData = {
     mmsi: 0,
     messages: [],
     trajectory: { mmsi: 0, binPath: Buffer.from('Not a buffer') },

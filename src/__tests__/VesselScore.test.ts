@@ -4,10 +4,9 @@ import SimpleScorer, {
   solveQuadraticCoeeficients,
   trajectorySingleScore,
 } from '../implementations/SimpleScorer'
-import { AISJobData, AisMessage, AISWorkerAlgorithm, Trajectory } from '../../AIS-models/models'
+import { AISJobData, AisMessage, AISWorkerAlgorithm, JobAisData, Trajectory } from '../../AIS-models/models'
 import { LineString, Point } from 'wkx'
 import { Messages } from '../implementations/Messages'
-import { AisData } from '../interfaces/IScorer'
 
 function testPoints(): Point[] {
   let point1: Point = new Point(10.521091672283175, 55.87986060393064, undefined, 1725863029.3645544, 4326)
@@ -25,7 +24,7 @@ function testPoints(): Point[] {
   return [point1, point2, point3, point4, point5, point6, point7, point8, point9, point10, point11]
 }
 
-function testMes(): AisData {
+function testMes(): JobAisData {
   // start time:    1725863029.3645544
   // end time:      1725863341.3673398
   // sog: ~11.5
@@ -43,7 +42,7 @@ function testMes(): AisData {
     binPath: buffer,
   }
 
-  let data: AisData = {
+  let data: JobAisData = {
     mmsi: 219019887,
     messages: aisMess,
     algorithm: AISWorkerAlgorithm.SIMPLE,
@@ -108,7 +107,7 @@ describe('test cases for helper functions', () => {
     )
 
     Buffer.from(EMPTY_MULTILINESTRING)
-    let empty: AisData = {
+    let empty: JobAisData = {
       mmsi: 0,
       messages: [],
       trajectory: {
@@ -147,7 +146,7 @@ describe('score/calculateVesselScore', () => {
     const EMPTY_LINESTRING = Uint8Array.from(
       '010200000000000000'.match(/.{1,2}/g)!.map((byte: any) => parseInt(byte, 16))
     )
-    let empty: AisData = {
+    let empty: JobAisData = {
       mmsi: 0,
       messages: [],
       trajectory: {
@@ -305,7 +304,7 @@ describe('Message analysis', () => {
 
     let buffer = line.toEwkb()
 
-    let jobdata: AisData = {
+    let jobdata: JobAisData = {
       mmsi: 0,
       messages: [],
       algorithm: AISWorkerAlgorithm.SIMPLE,
@@ -331,7 +330,7 @@ describe('Message analysis', () => {
 
     let buffer = line.toEwkb()
 
-    let jobdata: AisData = {
+    let jobdata: JobAisData = {
       mmsi: 0,
       messages: [],
       algorithm: AISWorkerAlgorithm.SIMPLE,

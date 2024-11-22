@@ -1,20 +1,32 @@
 import { Job, Queue, Worker } from 'bullmq'
 import IWorker from '../interfaces/IWorker'
-import { AISJobData, AISJobResult, AISWorkerAlgorithm } from '../../AIS-models/models'
+import { AISJobData, AISJobResult, AISWorkerAlgorithm, JobAisData } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
-import DatabaseHandler from './DatabaseHandler'
+import PostgresDatabaseHandler from './PostgresDatabaseHandler'
+import jobAisData from '../../test_files/JobAisData.json'
 
 export default class AISWorker implements IWorker {
   private readonly worker: Worker
+  private readonly testData: JobAisData
 
   constructor(
     private readonly jobQueue: Queue<AISJobData, AISJobResult>,
-    private readonly databaseHandler: DatabaseHandler,
+    private readonly databaseHandler: PostgresDatabaseHandler,
     private readonly connection: { host: string; port: number },
     private readonly randomScorer: IScorer,
     private readonly simpleScorer: IScorer,
     private readonly hashScorer: IScorer
   ) {
+    this.testData = {
+      mmsi: jobAisData.mmsi,
+      messages: jobAisData.messages.map((msg) => ({ ...msg, timestamp: new Date(msg.timestamp) })),
+      trajectory: {
+        mmsi: jobAisData.trajectory.mmsi,
+        binPath: Buffer.from(jobAisData.trajectory.binPath.data),
+      },
+      algorithm: AISWorkerAlgorithm.TESTING,
+    }
+
     this.worker = new Worker(this.jobQueue.name, this.computeJob.bind(this), {
       connection: this.connection,
       autorun: false,
@@ -58,14 +70,19 @@ export default class AISWorker implements IWorker {
 
     const { mmsi, timestamp, algorithm } = job.data
 
-    const messages = await this.databaseHandler.getAisMessages(mmsi, timestamp, 1)
-    const trajectory = await this.databaseHandler.getTrajectory(mmsi, timestamp, 1)
+    let data: JobAisData
 
-    const data = {
-      mmsi,
-      messages,
-      trajectory,
-      algorithm,
+    if (job.data.algorithm === AISWorkerAlgorithm.TESTING) {
+      data = this.testData
+    } else {
+      const aisData = await this.databaseHandler.getAisData(mmsi, timestamp, 1)
+
+      data = {
+        mmsi,
+        messages: aisData.messages,
+        trajectory: aisData.trajectory,
+        algorithm,
+      }
     }
 
     switch (job.data.algorithm) {
@@ -75,6 +92,8 @@ export default class AISWorker implements IWorker {
         return this.simpleScorer.score(data)
       case AISWorkerAlgorithm.HASHED:
         return this.hashScorer.score(data)
+      case AISWorkerAlgorithm.TESTING:
+        return this.simpleScorer.score(data)
       default:
         throw new Error('Invalid algorithm')
     }

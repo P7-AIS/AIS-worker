@@ -1,13 +1,12 @@
 import { Geometry, LineString, MultiLineString } from 'wkx'
 import { IMessageConverter, VesselMessage } from '../interfaces/IMessages'
-import { AISJobData, AisMessage } from '../../AIS-models/models'
-import { AisData } from '../interfaces/IScorer'
+import { AISJobData, AisMessage, JobAisData } from '../../AIS-models/models'
 
 export class Messages implements IMessageConverter, VesselMessage {
   /**
    * Note: this throws if input trajectory is not of type `LineString`
    */
-  constructor(data: AisData) {
+  constructor(data: JobAisData) {
     this.mmsi = data.mmsi
     this.aisMessages = data.messages
 

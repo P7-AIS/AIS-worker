@@ -1,18 +1,35 @@
 import { Pool, PoolClient } from 'pg'
 import { AisMessage, Trajectory } from '../../AIS-models/models'
-import { e, re } from 'mathjs'
+import IDatabaseHandler from '../interfaces/IDatabaseHandler'
 
-export default class DatabaseHandler {
-  private readonly client: Promise<PoolClient>
+export default class PostgresDatabaseHandler implements IDatabaseHandler {
+  private readonly pool: Pool
 
-  constructor(private readonly connectionString: string) {
-    const pool = new Pool({ connectionString })
-
-    this.client = pool.connect()
+  constructor(connectionString: string) {
+    this.pool = new Pool({ connectionString })
   }
 
-  async getAisMessages(mmsi: number, timestamp: number, duration_h: number): Promise<AisMessage[]> {
-    const client = await this.client
+  async getAisData(
+    mmsi: number,
+    timestamp: number,
+    duration_h: number
+  ): Promise<{ messages: AisMessage[]; trajectory: Trajectory }> {
+    const client = await this.pool.connect()
+
+    const messages = await this.getAisMessages(client, mmsi, timestamp, duration_h)
+    const trajectory = await this.getTrajectory(client, mmsi, timestamp, duration_h)
+
+    client.release()
+
+    return { messages, trajectory }
+  }
+
+  private async getAisMessages(
+    client: PoolClient,
+    mmsi: number,
+    timestamp: number,
+    duration_h: number
+  ): Promise<AisMessage[]> {
     const startimeStr = new Date(timestamp - duration_h * 3_600).toISOString().slice(0, 19).replace('T', ' ')
     const endtimeStr = new Date(timestamp).toISOString().slice(0, 19).replace('T', ' ')
     const sql = `
@@ -59,10 +76,13 @@ export default class DatabaseHandler {
     return messages
   }
 
-  async getTrajectory(mmsi: number, timestamp: number, duration: number): Promise<Trajectory> {
-    const client = await this.client
-
-    const startime = timestamp - duration * 3600
+  private async getTrajectory(
+    client: PoolClient,
+    mmsi: number,
+    timestamp: number,
+    duration_h: number
+  ): Promise<Trajectory> {
+    const startime = timestamp - duration_h * 3600
     const endtime = timestamp
 
     const sql = `
