@@ -1,9 +1,10 @@
 import { Job, Queue, Worker } from 'bullmq'
 import IWorker from '../interfaces/IWorker'
-import { AISJobData, AISJobResult, AISWorkerAlgorithm, JobAisData } from '../../AIS-models/models'
+import { AISJobData, AISJobResult, AISJobTestResult, AISWorkerAlgorithm, JobAisData } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
 import PostgresDatabaseHandler from './PostgresDatabaseHandler'
 import jobAisData from './jobAisData.json'
+import TestingScorer from './TestingScorer'
 
 export default class AISWorker implements IWorker {
   private readonly worker: Worker
@@ -15,7 +16,8 @@ export default class AISWorker implements IWorker {
     private readonly connection: { host: string; port: number },
     private readonly randomScorer: IScorer,
     private readonly simpleScorer: IScorer,
-    private readonly hashScorer: IScorer
+    private readonly hashScorer: IScorer,
+    private readonly testingScorer: TestingScorer
   ) {
     this.testData = {
       mmsi: jobAisData.mmsi,
@@ -70,13 +72,16 @@ export default class AISWorker implements IWorker {
 
     const { mmsi, timestamp, algorithm } = job.data
 
+    job.progress
+
     let data: JobAisData
+
+    const dbQueryStart = new Date().getTime()
 
     if (job.data.algorithm === AISWorkerAlgorithm.TESTING) {
       data = this.testData
     } else {
       const aisData = await this.databaseHandler.getAisData(mmsi, timestamp, 1)
-
       data = {
         mmsi,
         messages: aisData.messages,
@@ -84,6 +89,8 @@ export default class AISWorker implements IWorker {
         algorithm,
       }
     }
+
+    const dbQueryEnd = new Date().getTime()
 
     switch (job.data.algorithm) {
       case AISWorkerAlgorithm.RANDOM:
@@ -94,6 +101,8 @@ export default class AISWorker implements IWorker {
         return this.hashScorer.score(data)
       case AISWorkerAlgorithm.TESTING:
         return this.simpleScorer.score(data)
+      case AISWorkerAlgorithm.PROFILING:
+        return this.testingScorer.score(data, dbQueryStart, dbQueryEnd)
       default:
         throw new Error('Invalid algorithm')
     }
