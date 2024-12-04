@@ -1,6 +1,6 @@
 import { Job, Queue, Worker } from 'bullmq'
 import IWorker from '../interfaces/IWorker'
-import { AISJobData, AISJobResult, AISWorkerAlgorithm, JobAisData } from '../../AIS-models/models'
+import { AISJobData, AISJobResult, AISJobTestResult, AISWorkerAlgorithm, JobAisData } from '../../AIS-models/models'
 import IScorer from '../interfaces/IScorer'
 import PostgresDatabaseHandler from './PostgresDatabaseHandler'
 import jobAisData from './jobAisData.json'
@@ -72,6 +72,8 @@ export default class AISWorker implements IWorker {
 
     const { mmsi, timestamp, algorithm } = job.data
 
+    job.progress
+
     let data: JobAisData
 
     const dbQueryStart = new Date().getTime()
@@ -80,7 +82,6 @@ export default class AISWorker implements IWorker {
       data = this.testData
     } else {
       const aisData = await this.databaseHandler.getAisData(mmsi, timestamp, 1)
-
       data = {
         mmsi,
         messages: aisData.messages,
