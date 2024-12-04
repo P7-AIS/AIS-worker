@@ -11,46 +11,82 @@ class Randomizer implements VesselRandomiser {
   inc: number
   next: number | undefined
   delete: number
+  used: boolean
+  random_index: number
 
-  trajRandom(index: number, input: number, long: boolean): number {
-    if (Math.random() < 0.95) {
+  trajRandom(progress: number, input: number, long: boolean): number {
+    if (this.random_index !== 0) {
+      return input
+    }
+
+    if (this.used) {
+      return input
+    }
+    if (Math.random() > progress) {
       return input
     }
     let output = long ? Math.random() * 360 - 180 : Math.random() * 180 - 90
+    console.log(output)
+    this.used = true
     return output
   }
-  cogRandom(index: number, input?: number): number | undefined {
+  cogRandom(progress: number, input?: number): number | undefined {
+    if (this.random_index !== 1) {
+      return input
+    }
+    if (this.used) {
+      return input
+    }
     if (!input) {
       return undefined
     }
 
-    if (Math.random() < 0.9) {
+    if (Math.random() > progress) {
       return input
     }
-    return Math.random() * 360
+    this.used = true
+    let output = (input + 180) % 360
+    return output
   }
-  sogRandom(index: number, input?: number): number | undefined {
+  sogRandom(progress: number, input?: number): number | undefined {
+    if (this.random_index !== 2) {
+      return input
+    }
+    if (this.used) {
+      return input
+    }
     if (!input) {
       return undefined
     }
-    if (Math.random() < 0.9) {
+
+    if (Math.random() > progress) {
       return input
     }
-
+    this.used = true
     return Math.random() * 1000
   }
-  repRandom(index: number): boolean {
-    if (this.delete > 0) {
-      this.delete = this.delete - 1
-      return false
+  repRandom(progress: number): boolean {
+    if (this.random_index !== 3) {
+      return true
     }
-    if (this.random() > 0.9) {
-      this.delete = this.random() * 1000
+    if (this.used) {
+      return true
     }
-    return true
+
+    if (Math.random() > progress) {
+      return true
+    }
+    this.used = true
+    return false
   }
   reset(): void {
     this.next = undefined
+    this.used = false
+  }
+
+  reset_vessel(): void {
+    this.reset()
+    this.random_index = 1 // Math.floor(Math.random() * 3)
   }
 
   private random(): number {
@@ -66,27 +102,26 @@ class Randomizer implements VesselRandomiser {
     this.mult = Math.floor(Math.random() * MOD)
     this.inc = Math.floor(Math.random() * MOD)
     this.delete = 0
+    this.used = false
+    this.random_index = -1
   }
 }
 
 class NotRandomizer implements VesselRandomiser {
-  trajRandom(index: number, input: number, long: boolean): number {
+  reset_vessel(): void {}
+  trajRandom(progress: number, input: number, long: boolean): number {
     return input
   }
-  cogRandom(index: number, input?: number): number | undefined {
+  cogRandom(progress: number, input?: number): number | undefined {
     return input
   }
-  sogRandom(index: number, input?: number): number | undefined {
+  sogRandom(progress: number, input?: number): number | undefined {
     return input
   }
-  repRandom(index: number): boolean {
-    return false
+  repRandom(progress: number): boolean {
+    return true
   }
   reset(): void {}
-
-  private prng(): number {
-    return 0
-  }
 }
 
 async function shit_lang() {
