@@ -30,7 +30,10 @@ export default class PostgresDatabaseHandler implements IDatabaseHandler {
     timestamp: number,
     duration_h: number
   ): Promise<AisMessage[]> {
-    const startimeStr = new Date(timestamp * 1000 - duration_h * 3_600).toISOString().slice(0, 19).replace('T', ' ')
+    const startimeStr = new Date(timestamp * 1000 - duration_h * 3600 * 1000)
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ')
     const endtimeStr = new Date(timestamp * 1000).toISOString().slice(0, 19).replace('T', ' ')
     const sql = `
       SELECT id, vessel_mmsi, destination, mobile_type_id, nav_status_id, data_source_type, timestamp, cog, rot, sog, heading, draught, cargo_type, eta
@@ -82,7 +85,7 @@ export default class PostgresDatabaseHandler implements IDatabaseHandler {
     timestamp: number,
     duration_h: number
   ): Promise<Trajectory> {
-    const startime = timestamp * 1000 - duration_h * 3600
+    const startime = timestamp * 1000 - duration_h * 3600 * 1000
     const endtime = timestamp * 1000
 
     const sql = `
