@@ -26,7 +26,7 @@ export default class AISWorker implements IWorker {
         mmsi: jobAisData.trajectory.mmsi,
         binPath: Buffer.from(jobAisData.trajectory.binPath.data),
       },
-      algorithm: AISWorkerAlgorithm.TESTING,
+      algorithm: AISWorkerAlgorithm.PROFILING_JSON,
     }
 
     this.worker = new Worker(this.jobQueue.name, this.computeJob.bind(this), {
@@ -78,7 +78,7 @@ export default class AISWorker implements IWorker {
 
     const dbQueryStart = new Date().getTime()
 
-    if (job.data.algorithm === AISWorkerAlgorithm.TESTING) {
+    if (job.data.algorithm === AISWorkerAlgorithm.PROFILING_JSON) {
       data = this.testData
     } else {
       const aisData = await this.databaseHandler.getAisData(mmsi, timestamp, 1)
@@ -99,9 +99,8 @@ export default class AISWorker implements IWorker {
         return this.simpleScorer.score(data)
       case AISWorkerAlgorithm.HASHED:
         return this.hashScorer.score(data)
-      case AISWorkerAlgorithm.TESTING:
-        return this.simpleScorer.score(data)
-      case AISWorkerAlgorithm.PROFILING:
+      case AISWorkerAlgorithm.PROFILING_FETCH:
+      case AISWorkerAlgorithm.PROFILING_JSON:
         return this.testingScorer.score(data, dbQueryStart, dbQueryEnd)
       default:
         throw new Error('Invalid algorithm')
